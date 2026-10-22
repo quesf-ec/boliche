@@ -78,7 +78,7 @@ body{margin:0;overflow:hidden;overscroll-behavior:none;-webkit-user-select:none;
 </head>
 <body class="fondo--aurora">
 <main class="escena">
-  <canvas id="tina" aria-label="La tina del boliche: una hondonada con dos agujeros grandes en el fondo —uno redondo y una cajita cuadrada— separados por un tope recto, con la gente alrededor" role="img"></canvas>
+  <canvas id="tina" aria-label="La tina del boliche: una hondonada con dos agujeros grandes juntos en el fondo —uno redondo y una cajita cuadrada— y un tope recto un poco más arriba, con la gente alrededor" role="img"></canvas>
   <div class="globos" id="globos" aria-hidden="true"></div>
 
   <div class="hud-juego">
@@ -173,7 +173,7 @@ body{margin:0;overflow:hidden;overscroll-behavior:none;-webkit-user-select:none;
         <li><svg class="icono icono--s" aria-hidden="true"><use href="#i-billete"/></svg>
           <span>La banca pregunta: <b>¿va a jugar o no?</b> Pon tus monedas en la mesa o pasa, aunque tú quisieras lo otro.</span></li>
         <li><svg class="icono icono--s" aria-hidden="true"><use href="#i-punto"/></svg>
-          <span>Ocho canicas ruedan por la tina y caen en los dos agujeros, uno a cada lado del tope. <b>Se cuentan:</b> 4 y 4 o 2 y 6 es pares; 3 y 5 o 1 y 7 es nones. La última decide.</span></li>
+          <span>Ocho canicas ruedan por la tina y caen en los dos agujeros del fondo. <b>Se cuentan:</b> 4 y 4 o 2 y 6 es pares; 3 y 5 o 1 y 7 es nones. La última decide.</span></li>
         <li><svg class="icono icono--s" aria-hidden="true"><use href="#i-estrella"/></svg>
           <span>Si sale lo de la gente, <b>la banca paga el doble</b> a todos. Si no, barre la mesa. La banca tiene buena mano, pero también pierde.</span></li>
       </ul>
@@ -204,12 +204,12 @@ body{margin:0;overflow:hidden;overscroll-behavior:none;-webkit-user-select:none;
   </div>
 </main>
 
-<script src="tina.js?v=6"></script>
+<script src="tina.js?v=7"></script>
 <script src="../../../ds/mal/mal.js?v=1.0.17" defer></script>
 <script type="module">
 import * as THREE from './three.module.min.js';
 import { Persona } from './gente.js?v=1';
-import { construir as construirEscenario, ESCENARIOS } from './escenarios.js?v=2';
+import { construir as construirEscenario, ESCENARIOS } from './escenarios.js?v=3';
 
 const $ = id => document.getElementById(id);
 const lienzo = $('tina');
