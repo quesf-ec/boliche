@@ -180,7 +180,7 @@
     azar = azar || Math.random;
     const c = tina.cfg, r = 1 - c.bola * 1.6;
     const tx = -Math.sin(origen), tz = Math.cos(origen);
-    const v = 1.0 + fuerza * 2.4;
+    const v = 0.85 + fuerza * 3.6;
     for (let i = 0; i < c.canicas; i++) {
       const fila = i % 2, col = (i >> 1) - (c.canicas / 2 - 1) / 2;
       const x0 = Math.cos(origen) * (r - fila * c.bola * 2.2) + tx * col * c.bola * 2.2;
