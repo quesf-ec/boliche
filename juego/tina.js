@@ -1,7 +1,7 @@
 /* La tina del boliche: la física, sin dibujo.
    La tina es una hondonada honda y redonda —un casquete de esfera—, como
    las de Guano y Píllaro: las paredes son empinadas cerca del borde y el
-   fondo es curvo. En el fondo hay dos agujeros grandes, juntos, sin nada
+   fondo es curvo. En el fondo hay dos agujeros, juntos, sin nada
    en medio: un redondo y una cajita cuadrada. Un poco más arriba, entre
    los dos, está el tope —la «l» del «.l.»—, que reparte lo que baja por
    ese lado.
@@ -30,11 +30,12 @@
     rodadura: 0.5,   // frenado constante de rodar sobre cemento
     rebote: 0.5,     // contra el borde y el tope
     bola: 0.024,     // radio de una canica: unos 1,5 cm de diámetro
-    // los dos agujeros, juntos en el fondo
-    redondo: { x: -0.112, z: 0, r: 0.1 },
-    cajita: { x: 0.108, z: 0, lado: 0.196 },
+    // los dos agujeros, juntos en el fondo: en cada uno caben cuatro
+    // canicas abajo y cuatro encima
+    redondo: { x: -0.066, z: 0, r: 0.06 },
+    cajita: { x: 0.06, z: 0, lado: 0.106 },
     // el tope: recto, un poco más arriba que los agujeros, entre los dos
-    tope: { z0: -0.12, z1: -0.28, ancho: 0.024 },
+    tope: { z0: -0.085, z1: -0.23, ancho: 0.022 },
     lomo: 2.5,       // entre los dos agujeros el fondo hace un lomito: nadie se queda ahí
     cae: 2.4,        // por debajo de esta velocidad, una canica sobre el agujero cae
     duracion: 12,    // a partir de aquí todo se frena más: nadie espera para siempre

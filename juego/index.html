@@ -204,7 +204,7 @@ body{margin:0;overflow:hidden;overscroll-behavior:none;-webkit-user-select:none;
   </div>
 </main>
 
-<script src="tina.js?v=7"></script>
+<script src="tina.js?v=8"></script>
 <script src="../../../ds/mal/mal.js?v=1.0.17" defer></script>
 <script type="module">
 import * as THREE from './three.module.min.js';
@@ -465,22 +465,20 @@ const MATERIAL = {
 };
 const esferaGeo = new THREE.SphereGeometry(CFG.bola, 24, 16);
 let mallas = [];
-/* Los sitios dentro de cada agujero: una capa en el fondo —seis en
-   anillo y una al centro en el redondo, nueve en la cajita— y otra
-   encima. Cada canica toma el sitio libre de la capa más baja que le
-   quede más cerca de por donde entró. */
+/* Los sitios dentro de cada agujero: cuatro en el fondo —en rombo en el
+   redondo, en cuadro en la cajita— y cuatro encima. Cada canica toma el sitio libre de la capa más
+   baja que le quede más cerca de por donde entró. */
 const ocupados = { redondo: new Set(), cajita: new Set() };
 function sitios(cual) {
-  const b = CFG.bola, out = [];
+  const b = CFG.bola, out = [], H = cual === 'redondo' ? CFG.redondo : CFG.cajita;
+  const d = cual === 'redondo' ? b * 1.42 : b * 1.04;            // del centro a cada una
   for (let capa = 0; capa < 2; capa++) {
-    if (cual === 'redondo') {
-      const R = CFG.redondo, rr = R.r - b - .006;
-      for (let k = 0; k < 6; k++) { const a = k / 6 * Math.PI * 2 + capa * Math.PI / 6; out.push({ capa, x: R.x + Math.cos(a) * rr, z: R.z + Math.sin(a) * rr }); }
-      out.push({ capa, x: R.x, z: R.z });
-    } else {
-      const K = CFG.cajita, paso = (K.lado - 2 * b - .01) / 2;
-      const filas = capa ? [-.5, .5] : [-1, 0, 1];   // encima van en los huecos que dejan las de abajo
-      for (const i of filas) for (const j of filas) out.push({ capa, x: K.x + i * paso, z: K.z + j * paso });
+    for (let k = 0; k < 4; k++) {
+      // en el redondo, las de encima van giradas 45° para asentarse entre las de abajo
+      const a = Math.PI / 4 + k * Math.PI / 2 + (cual === 'redondo' && capa ? Math.PI / 4 : 0);
+      const r = cual === 'redondo' ? d : d * Math.SQRT2;
+      // en el redondo se asientan entre las de abajo; en la cajita, 2×2 sobre 2×2, van justo encima
+      out.push({ capa, x: H.x + Math.cos(a) * r, z: H.z + Math.sin(a) * r, alto: capa ? (cual === 'redondo' ? 1.62 : 1.96) * b : 0 });
     }
   }
   return out;
@@ -488,11 +486,12 @@ function sitios(cual) {
 const SITIOS = { redondo: sitios('redondo'), cajita: sitios('cajita') };
 function lugarEnHueco(b) {
   const libres = SITIOS[b.hueco].map((p, i) => ({ ...p, i })).filter(p => !ocupados[b.hueco].has(p.i));
+  if (!libres.length) { ocupados[b.hueco].clear(); return lugarEnHueco(b); }
   const capa = Math.min(...libres.map(p => p.capa));
   const p = libres.filter(q => q.capa === capa).sort((a, c) => Math.hypot(a.x - b.x, a.z - b.z) - Math.hypot(c.x - b.x, c.z - b.z))[0];
   ocupados[b.hueco].add(p.i);
   const fondo = b.hueco === 'redondo' ? esc.fondoRedondo : esc.fondoCajita;
-  return { x: p.x, z: p.z, y: fondo + CFG.bola + capa * CFG.bola * 1.7 };
+  return { x: p.x, z: p.z, y: fondo + CFG.bola + p.alto };
 }
 function ponerCanicas(t) {
   ocupados.redondo.clear(); ocupados.cajita.clear();
@@ -534,7 +533,7 @@ function colocar(t) {
 /* ─── la cámara ────────────────────────────────────────────── */
 /* Agachado frente a la tina, con la gente enfrente. Cuando las canicas
    llegan al fondo se acerca, que es donde se decide todo. */
-const vista = { lejos: new THREE.Vector3(), cerca: new THREE.Vector3(), mira: new THREE.Vector3(), k: 0, objetivo: 0 };
+const vista = { lejos: new THREE.Vector3(), cerca: new THREE.Vector3(), encima: new THREE.Vector3(), mira: new THREE.Vector3(), k: 0, objetivo: 0 };
 function medir() {
   const w = lienzo.clientWidth, h = lienzo.clientHeight;
   render.setPixelRatio(Math.min(2, window.devicePixelRatio || 1));
@@ -547,6 +546,8 @@ function medir() {
   const elev = 42 * Math.PI / 180;
   vista.lejos.set(0, Math.sin(elev) * D, Math.cos(elev) * D);
   vista.cerca.set(0, Math.sin(52 * Math.PI / 180) * D * .58, Math.cos(52 * Math.PI / 180) * D * .58);
+  // al final, encima de los agujeros, para contar
+  vista.encima.set(0, -.55 + Math.sin(62 * Math.PI / 180) * D * .26, Math.cos(62 * Math.PI / 180) * D * .26);
   // de noche la niebla se traga lo de lejos; de día se alcanza a ver la iglesia
   escena.fog.near = D + (esc && !esc.noche ? 3 : 1.4); escena.fog.far = D + (esc && !esc.noche ? 13 : 5.5);
   const arriba = document.querySelector('.hud-juego__arriba').getBoundingClientRect().bottom;
@@ -560,10 +561,19 @@ function medir() {
   camara.updateProjectionMatrix();
   apuntar();
 }
+/* vista.k va de 0 (lejos) a 1 (cerca, cuando ruedan) y a 2 (encima de
+   los agujeros, cuando ya cayeron todas y se cuentan). */
 function apuntar() {
-  const k = vista.k * vista.k * (3 - 2 * vista.k);
-  camara.position.lerpVectors(vista.lejos, vista.cerca, k);
-  vista.mira.set(0, -.12 - k * .22, -.1 * (1 - k));
+  const suave = t => t * t * (3 - 2 * t);
+  if (vista.k <= 1) {
+    const k = suave(vista.k);
+    camara.position.lerpVectors(vista.lejos, vista.cerca, k);
+    vista.mira.set(0, -.12 - k * .22, -.1 * (1 - k));
+  } else {
+    const k = suave(vista.k - 1);
+    camara.position.lerpVectors(vista.cerca, vista.encima, k);
+    vista.mira.set(0, -.34 - k * .2, .02 * k);
+  }
   camara.lookAt(vista.mira);
 }
 
@@ -944,6 +954,7 @@ function decidir() {
   const salio = r.par ? 'pares' : 'nones', gana = salio === est.vamos;
   brilloRedondo.userData.encendido = brilloCajita.userData.encendido = true;
   lenta = 1;
+  setTimeout(() => { if (est.fase === 'fin') vista.objetivo = 2; }, 500);
   const donde = `Quedaron ${r.redondo} en el redondo y ${r.cajita} en la cajita.`;
   $('fin-suma').innerHTML = `${r.par ? 'Pares' : 'Nones'} <small class="micro">${r.redondo} y ${r.cajita}</small>`;
   const jugadores = VECINOS.filter(v => v.juega);
