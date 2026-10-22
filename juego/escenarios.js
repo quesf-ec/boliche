@@ -21,7 +21,7 @@ export const ESCENARIOS = {
   tienda: { nombre: 'En la tienda', corto: 'Tienda' },
 };
 
-export const HONDO_HUECO = .055;   // lo que se hunde un agujero
+export const HONDO_HUECO = .07;    // lo que se hunde un agujero: caben dos capas de canicas
 
 /* ─── texturas pintadas en un canvas ───────────────────────── */
 function lienzo(THREE, w, h, pinta, { repite = true, flipY = true } = {}) {
@@ -236,15 +236,41 @@ function tina(THREE, CFG, alt, e, grupo) {
     l.rotation.y = -Math.atan2(z1 - z0, x1 - x0); l.castShadow = true; grupo.add(l);
   }
 
-  // el tope: una cuña de madera tirada en el fondo
-  const T = CFG.tope, forma = new THREE.Shape();
-  forma.moveTo(-T.largo / 2, 0); forma.lineTo(T.largo / 2, 0); forma.lineTo(T.largo / 2, .034); forma.closePath();
-  const cuna = new THREE.Mesh(new THREE.ExtrudeGeometry(forma, { depth: .034, bevelEnabled: false }), madera);
-  cuna.geometry.translate(0, 0, -.017);
-  cuna.position.set(T.x, alt(T.x, T.z) - .004, T.z); cuna.rotation.y = -T.angulo;
-  cuna.castShadow = cuna.receiveShadow = true; grupo.add(cuna);
+  // el tope: recto entre los dos agujeros —el «.l.»—, distinto en cada tina
+  grupo.add(tope(THREE, CFG, alt, e.tope, madera));
 
   return { ladoCajita, fondoRedondo: yR, fondoCajita: yK };
+}
+
+/* El tope va a lo largo del eje z, en x = 0, entre los dos agujeros. En
+   la tina de plástico es la nariz de la carita; en las otras puede ser
+   una fila de ladrillos, un muro de cemento o una tabla de canto. */
+function tope(THREE, CFG, alt, forma, madera) {
+  const T = CFG.tope, g = new THREE.Group(), y0 = alt(0, 0);
+  const mat = color => new THREE.MeshStandardMaterial({ color, roughness: .85 });
+  if (forma === 'nariz') {
+    const m = new THREE.Mesh(new THREE.CapsuleGeometry(T.ancho * .95, T.largo - T.ancho * 1.9, 6, 16), mat(0xe8d6bc));
+    m.rotation.x = Math.PI / 2; m.scale.set(1, 1, 1.25); m.position.y = y0 + T.ancho * .55;
+    g.add(m);
+  } else if (forma === 'ladrillos') {
+    const n = 3, l = T.largo / n;
+    for (let i = 0; i < n; i++) {
+      const z = -T.largo / 2 + l * (i + .5);
+      const m = new THREE.Mesh(new THREE.BoxGeometry(T.ancho * 1.15, .045, l - .006), mat(i % 2 ? 0xa4532e : 0x9a4a2a));
+      m.position.set(0, alt(0, z) + .016, z); g.add(m);
+    }
+  } else if (forma === 'muro') {
+    const m = new THREE.Mesh(new THREE.BoxGeometry(T.ancho, .05, T.largo), mat(0xb9b6ae));
+    m.position.y = y0 + .02; g.add(m);
+    const lomo = new THREE.Mesh(new THREE.CylinderGeometry(T.ancho / 2, T.ancho / 2, T.largo, 10), mat(0xb9b6ae));
+    lomo.rotation.x = Math.PI / 2; lomo.position.y = y0 + .045; g.add(lomo);
+  } else {
+    // tabla de canto
+    const m = new THREE.Mesh(new THREE.BoxGeometry(T.ancho * .75, .06, T.largo), madera);
+    m.position.y = y0 + .024; g.add(m);
+  }
+  g.traverse(m => { if (m.isMesh) { m.castShadow = true; m.receiveShadow = true; } });
+  return g;
 }
 
 /* ─── asientos ─────────────────────────────────────────────── */
@@ -403,13 +429,13 @@ const ENTORNO = {
 /* Lo propio de cada escenario. `alto` es cuánto sobresale la tina del
    piso (0: está hundida en la tierra). */
 const DATOS = {
-  comunidad: { tina: 'cemento', piso: 'tierra', alto: 0, asiento: 'suelo', cielo: 0x141826, noche: true,
+  comunidad: { tina: 'cemento', tope: 'ladrillos', piso: 'tierra', alto: 0, asiento: 'suelo', cielo: 0x141826, noche: true,
     sol: [0xffd9a0, 1.4, [-.6, 4, .4]], hemi: [0x8ea0c8, 0x4a3628, .55], radioGente: 1.48, radioMonedas: 1.22, yMonedas: 0, repPiso: 7 },
-  patio: { tina: 'concreto', piso: 'losa', alto: .32, asiento: 'plastico', cielo: 0xcbd9e6, rugosa: .85,
+  patio: { tina: 'concreto', tope: 'muro', piso: 'losa', alto: .32, asiento: 'plastico', cielo: 0xcbd9e6, rugosa: .85,
     sol: [0xffdcaa, 2.5, [-3, 3.4, 2.2]], hemi: [0xdbe8ff, 0x8a6a4a, .8], radioGente: 1.5, radioMonedas: 1.045, yMonedas: .026, repPiso: 10 },
-  plaza: { tina: 'carita', piso: 'adoquin', alto: .16, asiento: 'banquito', cielo: 0xbcd3ea, rugosa: .45, pozo: 0x3a3a3a, bordeClaro: 1,
+  plaza: { tina: 'carita', tope: 'nariz', piso: 'adoquin', alto: .16, asiento: 'banquito', cielo: 0xbcd3ea, rugosa: .45, pozo: 0x3a3a3a, bordeClaro: 1,
     sol: [0xfff4e0, 2.7, [2, 5, 1.6]], hemi: [0xe6f0ff, 0x7a6a58, .85], radioGente: 1.48, radioMonedas: 1.045, yMonedas: .026, repPiso: 8 },
-  tienda: { tina: 'batea', piso: 'baldosa', alto: .28, asiento: 'jaba', cielo: 0x2a2340, rugosa: .7, materialBorde: 0x7a4f2c,
+  tienda: { tina: 'batea', tope: 'tabla', piso: 'baldosa', alto: .28, asiento: 'jaba', cielo: 0x2a2340, rugosa: .7, materialBorde: 0x7a4f2c,
     sol: [0xffc890, 1.3, [1.5, 4, 2]], hemi: [0x9aa8d0, 0x4a3a30, .6], radioGente: 1.5, radioMonedas: 1.045, yMonedas: .026, repPiso: 14 },
 };
 

@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>El boliche · Finados en la Sierra</title>
-<meta name="description" content="El boliche de Guano y Píllaro, en 3D: la gente grita pares o nones, la banca decide, tú pones tu moneda o pasas, y ocho canicas ruedan por la tina hasta que la primera cae. Redondo, pares; cajita, nones.">
+<meta name="description" content="El boliche de Guano y Píllaro, en 3D: la gente grita pares o nones, la banca decide, tú pones tu moneda o pasas, y ocho canicas ruedan por la tina hasta caer en los dos agujeros. Si en cada uno quedan pares, pares; si quedan impares, nones.">
 <meta name="theme-color" content="#1d1822">
 <link rel="canonical" href="https://franciscombp.github.io/mal/apps/boliche/juego/">
 <link rel="icon" href="../../../img/icono-boliche.svg" type="image/svg+xml">
@@ -78,7 +78,7 @@ body{margin:0;overflow:hidden;overscroll-behavior:none;-webkit-user-select:none;
 </head>
 <body class="fondo--aurora">
 <main class="escena">
-  <canvas id="tina" aria-label="La tina del boliche: una hondonada de cemento con un agujero redondo, una cajita cuadrada y un tope de madera en el fondo, con la gente alrededor" role="img"></canvas>
+  <canvas id="tina" aria-label="La tina del boliche: una hondonada con dos agujeros grandes en el fondo —uno redondo y una cajita cuadrada— separados por un tope recto, con la gente alrededor" role="img"></canvas>
   <div class="globos" id="globos" aria-hidden="true"></div>
 
   <div class="hud-juego">
@@ -146,7 +146,7 @@ body{margin:0;overflow:hidden;overscroll-behavior:none;-webkit-user-select:none;
       <!-- 4 · Mientras ruedan -->
       <section class="vidrio pila mesa" id="m-rueda" hidden aria-live="polite">
         <p class="kicker" id="rueda-k">Ruedan</p>
-        <p class="caption" id="rueda-t">La primera que caiga decide.</p>
+        <p class="caption" id="rueda-t">Se cuentan las que caen en cada agujero.</p>
       </section>
 
       <!-- 5 · El resultado -->
@@ -173,7 +173,7 @@ body{margin:0;overflow:hidden;overscroll-behavior:none;-webkit-user-select:none;
         <li><svg class="icono icono--s" aria-hidden="true"><use href="#i-billete"/></svg>
           <span>La banca pregunta: <b>¿va a jugar o no?</b> Pon tus monedas en la mesa o pasa, aunque tú quisieras lo otro.</span></li>
         <li><svg class="icono icono--s" aria-hidden="true"><use href="#i-punto"/></svg>
-          <span>Ocho canicas ruedan por la tina. <b>La primera que cae decide:</b> el redondo es pares, la cajita es nones.</span></li>
+          <span>Ocho canicas ruedan por la tina y caen en los dos agujeros, uno a cada lado del tope. <b>Se cuentan:</b> 4 y 4 o 2 y 6 es pares; 3 y 5 o 1 y 7 es nones. La última decide.</span></li>
         <li><svg class="icono icono--s" aria-hidden="true"><use href="#i-estrella"/></svg>
           <span>Si sale lo de la gente, <b>la banca paga el doble</b> a todos. Si no, barre la mesa. La banca tiene buena mano, pero también pierde.</span></li>
       </ul>
@@ -204,12 +204,12 @@ body{margin:0;overflow:hidden;overscroll-behavior:none;-webkit-user-select:none;
   </div>
 </main>
 
-<script src="tina.js?v=5"></script>
+<script src="tina.js?v=6"></script>
 <script src="../../../ds/mal/mal.js?v=1.0.17" defer></script>
 <script type="module">
 import * as THREE from './three.module.min.js';
 import { Persona } from './gente.js?v=1';
-import { construir as construirEscenario, ESCENARIOS } from './escenarios.js?v=1';
+import { construir as construirEscenario, ESCENARIOS } from './escenarios.js?v=2';
 
 const $ = id => document.getElementById(id);
 const lienzo = $('tina');
@@ -465,9 +465,37 @@ const MATERIAL = {
 };
 const esferaGeo = new THREE.SphereGeometry(CFG.bola, 24, 16);
 let mallas = [];
-const enHueco = { redondo: 0, cajita: 0 };
+/* Los sitios dentro de cada agujero: una capa en el fondo —seis en
+   anillo y una al centro en el redondo, nueve en la cajita— y otra
+   encima. Cada canica toma el sitio libre de la capa más baja que le
+   quede más cerca de por donde entró. */
+const ocupados = { redondo: new Set(), cajita: new Set() };
+function sitios(cual) {
+  const b = CFG.bola, out = [];
+  for (let capa = 0; capa < 2; capa++) {
+    if (cual === 'redondo') {
+      const R = CFG.redondo, rr = R.r - b - .006;
+      for (let k = 0; k < 6; k++) { const a = k / 6 * Math.PI * 2 + capa * Math.PI / 6; out.push({ capa, x: R.x + Math.cos(a) * rr, z: R.z + Math.sin(a) * rr }); }
+      out.push({ capa, x: R.x, z: R.z });
+    } else {
+      const K = CFG.cajita, paso = (K.lado - 2 * b - .01) / 2;
+      const filas = capa ? [-.5, .5] : [-1, 0, 1];   // encima van en los huecos que dejan las de abajo
+      for (const i of filas) for (const j of filas) out.push({ capa, x: K.x + i * paso, z: K.z + j * paso });
+    }
+  }
+  return out;
+}
+const SITIOS = { redondo: sitios('redondo'), cajita: sitios('cajita') };
+function lugarEnHueco(b) {
+  const libres = SITIOS[b.hueco].map((p, i) => ({ ...p, i })).filter(p => !ocupados[b.hueco].has(p.i));
+  const capa = Math.min(...libres.map(p => p.capa));
+  const p = libres.filter(q => q.capa === capa).sort((a, c) => Math.hypot(a.x - b.x, a.z - b.z) - Math.hypot(c.x - b.x, c.z - b.z))[0];
+  ocupados[b.hueco].add(p.i);
+  const fondo = b.hueco === 'redondo' ? esc.fondoRedondo : esc.fondoCajita;
+  return { x: p.x, z: p.z, y: fondo + CFG.bola + capa * CFG.bola * 1.7 };
+}
 function ponerCanicas(t) {
-  enHueco.redondo = enHueco.cajita = 0;
+  ocupados.redondo.clear(); ocupados.cajita.clear();
   for (const m of mallas) escena.remove(m);
   mallas = t.bolas.map(b => {
     const m = new THREE.Mesh(esferaGeo, MATERIAL[b.color]);
@@ -488,10 +516,8 @@ function colocar(t) {
       /* Cae al fondo del agujero y se queda ahí, asomando. Si ya había
          otra, se acomoda encima, un poco corrida. */
       if (!b.reposo) {
-        const n = enHueco[b.hueco]++, a = Math.random() * Math.PI * 2, corre = n ? .01 : 0;
-        const fondo = b.hueco === 'redondo' ? esc.fondoRedondo : esc.fondoCajita;
-        b.reposo = { x0: b.x, z0: b.z, x: b.fx + Math.cos(a) * corre, z: b.fz + Math.sin(a) * corre,
-          y: fondo + CFG.bola + n * CFG.bola * 1.55 };
+        const p = lugarEnHueco(b);
+        b.reposo = { x0: b.x, z0: b.z, ...p };
       }
       const r = b.reposo, k = b.cayendo, kxz = 1 - Math.pow(1 - Math.min(1, k * 1.5), 2);
       x = r.x0 + (r.x - r.x0) * kxz; z = r.z0 + (r.z - r.z0) * kxz;
@@ -548,18 +574,19 @@ function cuadro(ahora) {
   const real = Math.min(1, (ahora - antes) / 1000 || 0), dt = Math.min(.05, real); antes = ahora;
   if (est.fase === 'rueda' || est.fase === 'fin') {
     // cámara lenta cuando una está a punto de caer
-    const objetivo = est.fase === 'rueda' && casiCae() ? .35 : 1;
+    // cámara lenta cuando la última está a punto de caer
+    const objetivo = est.fase === 'rueda' && restantes() === 1 && casiCae() ? .3 : 1;
     lenta += (objetivo - lenta) * Math.min(1, dt * 6);
     resto += dt * lenta;
     let n = 0;
     while (resto >= DT && n++ < 60) {
       resto -= DT;
       for (const e of Tina.paso(tina, DT)) {
-        if (e.tipo === 'cae') { sonar('cae'); if (e.primera) decidir(); }
+        if (e.tipo === 'cae') { sonar('cae'); contarCaida(e); if (e.ultima) decidir(); }
         else sonar(e.tipo, e.fuerza / 2.2);
       }
     }
-    if (est.fase === 'rueda') { comentar(ahora); if (Tina.quietas(tina) && !tina.primera) nulo(); }
+    if (est.fase === 'rueda') { comentar(ahora); if (Tina.quietas(tina) && !Tina.todasDentro(tina)) nulo(); }
     // la cámara se acerca cuando la mayoría ya llegó al fondo
     const abajo = tina.bolas.filter(b => !b.hueco && Math.hypot(b.x, b.z) < .4).length;
     if (est.fase === 'rueda' && (abajo >= 3 || tina.t > 3)) vista.objetivo = 1;
@@ -585,16 +612,33 @@ function cuadro(ahora) {
   requestAnimationFrame(cuadro);
 }
 
-/* ¿Hay una canica despacio, rozando un agujero? */
+/* ¿Hay una canica rozando un agujero? */
+const restantes = () => tina.bolas.filter(b => !b.hueco).length;
 function casiCae() {
-  if (tina.primera) return false;
+  if (Tina.todasDentro(tina)) return false;
   const R = CFG.redondo, K = CFG.cajita;
   return tina.bolas.some(b => {
-    if (b.hueco) return false;
-    const v = Math.hypot(b.vx, b.vz);
-    const cerca = Math.hypot(b.x - R.x, b.z - R.z) < R.r + .05 || Math.hypot(b.x - K.x, b.z - K.z) < K.lado + .04;
-    return cerca && v < CFG.cae * 1.8;
+    if (b.hueco || tina.t < b.espera) return false;
+    const cerca = Math.hypot(b.x - R.x, b.z - R.z) < R.r + .04 ||
+      (Math.abs(b.x - K.x) < K.lado / 2 + .03 && Math.abs(b.z - K.z) < K.lado / 2 + .03);
+    return cerca && Math.hypot(b.vx, b.vz) < CFG.cae * 1.4;
   });
+}
+
+/* Cada canica que cae se cuenta en voz alta. Cuando falta una, todo el
+   mundo sabe que esa decide. */
+function contarCaida(e) {
+  const r = Tina.resultado(tina), falta = tina.bolas.length - e.dentro;
+  $('rueda-k').textContent = `Redondo ${r.redondo} · Cajita ${r.cajita}`;
+  if (falta === 1) {
+    // con siete adentro, una cuenta es par y la otra impar: la última decide
+    const paraPares = r.redondo % 2 ? 'el redondo' : 'la cajita';
+    $('rueda-t').textContent = `¡Falta una y esa decide! Si cae en ${paraPares}, pares; si no, nones.`;
+    grita(BANCA, '¡La última decide!', 1800);
+    sonar('uy', .6);
+  } else if (falta > 0 && Math.random() < .55) {
+    grita(azar(VECINOS), azar([`¡${e.dentro}!`, e.hueco === 'redondo' ? '¡Otra al redondo!' : '¡Otra a la cajita!', '¡Una más!']), 900);
+  }
 }
 
 let tension = 0;
@@ -607,8 +651,7 @@ function animarGente(t, dt) {
   tension += (objetivo - tension) * Math.min(1, dt * 4);
   let punto = null;
   if (est.fase === 'rueda' || est.fase === 'fin') {
-    const R = CFG.redondo;
-    const b = tina.primera || tina.bolas.filter(b => !b.hueco).sort((a, c) => Math.hypot(a.x - R.x, a.z - R.z) - Math.hypot(c.x - R.x, c.z - R.z))[0];
+    const b = tina.ultima || tina.bolas.filter(b => !b.hueco && tina.t >= b.espera).sort((a, c) => Math.hypot(a.x, a.z) - Math.hypot(c.x, c.z))[0];
     if (b) punto = mira.set(b.x, alt(b.x, b.z), b.z);
   }
   aTi.copy(camara.position).multiplyScalar(.6);
@@ -628,17 +671,17 @@ function comentar(ahora) {
     grita(azar(VECINOS), azar(['¡Uyyy!', '¡Ya, ya, ya!', '¡Cae, cae!', '¡Uy, casi!']), 1200);
     if (Math.random() < .5) grita(BANCA, azar(['¡No, no, no!', '¡Sigue, sigue!']), 1100);
     sonar('uy', .8);
-    $('rueda-k').textContent = '¡Casi cae!';
+    if (restantes() === 1) $('rueda-k').textContent = '¡Casi cae la última!';
     return;
   }
   if (ahora - ultimoGrito > 1700 + Math.random() * 900) {
     ultimoGrito = ahora;
     const q = quien();
     const frases = q === BANCA
-      ? ['¡Para la casa!', est.vamos === 'pares' ? '¡A la cajita, mamita!' : '¡Al redondo, al redondo!', '¡Despacito!']
-      : [est.vamos === 'pares' ? '¡Al redondo!' : '¡A la cajita!', '¡Dale, dale!', '¡Despacito, despacito!', '¡Esa celeste!', '¡Esa blanca!'];
+      ? ['¡Para la casa!', '¡Sigan rodando!', '¡Despacito!']
+      : ['¡Bajen, bajen!', '¡Dale, dale!', '¡Despacito, despacito!', '¡Esa celeste!', '¡Esa blanca!'];
     grita(q, azar(frases), 1300);
-    $('rueda-k').textContent = azar(['Ruedan', 'Dan la vuelta', 'Bajan', 'Se chocan']);
+    if (!tina.primera) $('rueda-k').textContent = azar(['Ruedan', 'Dan la vuelta', 'Bajan', 'Se chocan']);
   }
 }
 
@@ -744,12 +787,15 @@ function decideBanca() {
   $('apuesta-dice').textContent = `«Vamos por ${est.vamos}. ¿Va a jugar o no?»`;
   $('apuesta-nota').textContent = contra
     ? `Tú querías ${est.quieres}, pero la gente pidió ${est.vamos}. ¿Entras igual?`
-    : est.quieres ? `Salió lo que pediste. Si cae en ${est.vamos === 'pares' ? 'el redondo' : 'la cajita'}, la banca paga el doble.`
-    : `Si cae en ${est.vamos === 'pares' ? 'el redondo' : 'la cajita'}, la banca paga el doble.`;
+    : est.quieres ? `Salió lo que pediste. Si quedan ${QUEDAN[est.vamos]}, la banca paga el doble.`
+    : `Si quedan ${QUEDAN[est.vamos]}, la banca paga el doble.`;
   pintarMano();
   mesa('m-apuesta');
   setTimeout(() => { if (est.fase === 'apuesta') grita(BANCA, '¿Va a jugar o no, mijo?', 2400); }, 900 + VECINOS.length * 450);
 }
+
+// cómo se ve cada cosa al contar
+const QUEDAN = { pares: 'pares en cada agujero (4 y 4, 2 y 6)', nones: 'impares en cada agujero (3 y 5, 1 y 7)' };
 
 // la mano: cada moneda que pones en la mesa son 25 ctvs
 function pintarMano() {
@@ -857,8 +903,9 @@ function semillado(s) {
 function sale(origen, angulo, fuerza, semilla) {
   const t = Tina.crear();
   Tina.tirar(t, origen, angulo, fuerza, semillado(semilla));
-  for (let n = 0; n < 240 * 40 && !t.primera; n++) Tina.paso(t, DT);
-  return t.primera ? (t.primera.hueco === 'redondo' ? 'pares' : 'nones') : null;
+  for (let n = 0; n < 240 * 40 && !Tina.todasDentro(t); n++) Tina.paso(t, DT);
+  const r = Tina.resultado(t);
+  return r.nulo ? null : r.par ? 'pares' : 'nones';
 }
 function tiroAlAzar(estilo) {
   const origen = ENFRENTE + (Math.random() - .5) * .5, lado = Math.random() < .5 ? -1 : 1;
@@ -883,7 +930,7 @@ function lanzar(origen, angulo, fuerza, semilla) {
   resto = 0; lenta = 1; ultimoGrito = performance.now(); ultimoUy = 0;
   est.fase = 'rueda';
   $('rueda-k').textContent = 'Ruedan';
-  $('rueda-t').textContent = `Vamos por ${est.vamos}: ${est.vamos === 'pares' ? 'que caiga en el redondo' : 'que caiga en la cajita'}.`;
+  $('rueda-t').textContent = `Vamos por ${est.vamos}: que queden ${est.vamos === 'pares' ? '4 y 4, o 2 y 6' : '3 y 5, o 1 y 7'}.`;
   mesa('m-rueda');
   sonar('pared', .7);
   // cómo salió el tiro: eso también se grita
@@ -891,14 +938,14 @@ function lanzar(origen, angulo, fuerza, semilla) {
   setTimeout(() => grita(q, fuerza > .72 ? azar(['¡Uy, duro!', '¡Se van a salir!']) : fuerza < .32 ? azar(['¡Muy despacio!', '¡Ni llegan!']) : '¡Buen tiro!', 1300), 350);
 }
 
-/* 4 · CAYÓ LA PRIMERA: ya se sabe. Las demás siguen rodando, de adorno. */
+/* 4 · CAYÓ LA ÚLTIMA: se cuenta. */
 function decidir() {
   const r = Tina.resultado(tina);
   const salio = r.par ? 'pares' : 'nones', gana = salio === est.vamos;
-  (r.par ? brilloRedondo : brilloCajita).userData.encendido = true;
+  brilloRedondo.userData.encendido = brilloCajita.userData.encendido = true;
   lenta = 1;
-  const donde = `Cayó una ${tina.primera.color} en ${r.par ? 'el redondo' : 'la cajita'}.`;
-  $('fin-suma').textContent = r.par ? 'Pares' : 'Nones';
+  const donde = `Quedaron ${r.redondo} en el redondo y ${r.cajita} en la cajita.`;
+  $('fin-suma').innerHTML = `${r.par ? 'Pares' : 'Nones'} <small class="micro">${r.redondo} y ${r.cajita}</small>`;
   const jugadores = VECINOS.filter(v => v.juega);
   if (gana) {
     // la banca paga el doble: devuelve lo de cada uno y pone otro tanto
@@ -928,11 +975,11 @@ function decidir() {
   setTimeout(() => { if (est.fase === 'fin') { mesa('m-fin'); $('b-otra').focus({ preventScroll: true }); } }, 900);
 }
 
-/* Ninguna cayó: el tiro no vale y cada uno recoge lo suyo. */
+/* Alguna se quedó afuera: el tiro no vale y cada uno recoge lo suyo. */
 function nulo() {
   if (est.juegas) est.saldo += est.apostado;
   est.juegas = false; est.apostado = 0; guardar();
-  grita(BANCA, 'No cayó ninguna: no vale. Otra.', 2000);
+  grita(BANCA, 'Una se quedó afuera: no vale. Otra.', 2000);
   nuevaRonda();
 }
 
