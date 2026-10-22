@@ -15,15 +15,15 @@
   const CFG = {
     canicas: 8,
     hondo: 0.42,     // lo que baja el cono del borde al fondo (en radios)
-    fondo: 0.2,      // radio del fondo, que es casi plano
+    fondo: 0.15,     // radio del fondo, que es casi plano
     g: 6.5,          // gravedad, en radios por segundo²
-    roce: 0.22,      // frenado proporcional a la velocidad
-    rodadura: 0.12,  // frenado constante, el que al final las para
+    roce: 0.15,      // frenado proporcional a la velocidad
+    rodadura: 0.08,  // frenado constante, el que al final las para
     rebote: 0.5,     // contra el borde y el tope
-    bola: 0.042,     // radio de una canica
-    redondo: { x: 0.075, z: 0.01, r: 0.062 },    // PARES
-    cajita: { x: -0.085, z: -0.02, lado: 0.07 },  // NONES: un cuadrado de este lado
-    tope: { x: 0.12, z: -0.09, angulo: -0.6, largo: 0.18 },  // la cuña de madera, cuidando el redondo
+    bola: 0.03,      // radio de una canica
+    redondo: { x: 0.054, z: 0.007, r: 0.045 },   // PARES
+    cajita: { x: -0.061, z: -0.014, lado: 0.05 }, // NONES: un cuadrado de este lado
+    tope: { x: 0.086, z: -0.065, angulo: -0.6, largo: 0.13 },  // la cuña de madera, cuidando el redondo
     labio: 0.035,    // cuánto más allá del agujero ya se siente la caída
     atrae: 2.2,
     cae: 0.6,        // por debajo de esta velocidad, una canica sobre el agujero cae
@@ -36,7 +36,7 @@
     const { x: x0, z: z0, angulo: a, largo } = cfg.tope, out = [];
     for (let i = 0; i < 4; i++) {
       const t = (i / 3 - 0.5) * largo;
-      out.push({ x: x0 + Math.cos(a) * t, z: z0 + Math.sin(a) * t, r: 0.026 });
+      out.push({ x: x0 + Math.cos(a) * t, z: z0 + Math.sin(a) * t, r: 0.019 });
     }
     return { x: x0, z: z0, angulo: a, largo, ancho: 0.05, circulos: out };
   }

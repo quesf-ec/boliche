@@ -154,7 +154,7 @@ body{margin:0;overflow:hidden;overscroll-behavior:none;-webkit-user-select:none;
   </div>
 </main>
 
-<script src="tina.js?v=2"></script>
+<script src="tina.js?v=3"></script>
 <script src="../../../ds/mal/mal.js?v=1.0.17" defer></script>
 <script type="module">
 import * as THREE from './three.module.min.js';
@@ -346,9 +346,9 @@ escena.add(brilloRedondo, brilloCajita);
 // el tope: una cuña de madera tirada en el fondo
 {
   const T = CFG.tope, forma = new THREE.Shape();
-  forma.moveTo(-T.largo / 2, 0); forma.lineTo(T.largo / 2, 0); forma.lineTo(T.largo / 2, .045); forma.closePath();
-  const cuna = new THREE.Mesh(new THREE.ExtrudeGeometry(forma, { depth: .045, bevelEnabled: false }), madera);
-  cuna.geometry.translate(0, 0, -.0225);
+  forma.moveTo(-T.largo / 2, 0); forma.lineTo(T.largo / 2, 0); forma.lineTo(T.largo / 2, .034); forma.closePath();
+  const cuna = new THREE.Mesh(new THREE.ExtrudeGeometry(forma, { depth: .034, bevelEnabled: false }), madera);
+  cuna.geometry.translate(0, 0, -.017);
   cuna.position.set(T.x, alt(T.x, T.z) - .004, T.z);
   cuna.rotation.y = -T.angulo;
   cuna.castShadow = cuna.receiveShadow = true;
