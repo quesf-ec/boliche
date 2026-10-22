@@ -1,0 +1,574 @@
+<!DOCTYPE html>
+<html lang="es" data-marca="juegos">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>El boliche · Finados en la Sierra</title>
+<meta name="description" content="La bolicha de Guano y Píllaro: la banca lanza dos canicas en la tina; si suman par gana la banca, si suman non paga al triple. Apuesta o ponte de banca.">
+<meta name="theme-color" content="#1d1822">
+<link rel="canonical" href="https://franciscombp.github.io/mal/apps/boliche/juego/">
+<link rel="icon" href="../../../img/icono-boliche.svg" type="image/svg+xml">
+<link rel="preload" href="../../../ds/fonts/syne.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="../../../ds/fonts/inter.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="../../../ds/mal/mal.css?v=1.0.17">
+<style>
+/* Solo el lienzo y el reparto de la pantalla: todo lo que va encima
+   —.hud-juego, .marcador, .chip, .boton-juego, .vidrio, .list-row— es
+   del sistema. */
+html,body{height:100%}
+body{margin:0;overflow:hidden;overscroll-behavior:none;-webkit-user-select:none;user-select:none}
+.escena{position:fixed;inset:0}
+#tina{position:absolute;inset:0;width:100%;height:100%;touch-action:none;display:block}
+.mesa{width:min(100%, 440px);padding:var(--mal-e4);gap:var(--mal-e3)}
+.mesa[hidden],.capa[hidden]{display:none}
+.mesa .kicker{margin:0}
+.mesa__linea{display:flex;align-items:baseline;justify-content:space-between;gap:var(--mal-e3)}
+.mesa__suma{font-family:var(--mal-display);font-weight:800;font-size:clamp(1.6rem, 1.1rem + 2.4vw, 2.2rem);
+  line-height:1;letter-spacing:-.03em;margin:0}
+.mesa__suma small{font-family:var(--mal-mono);font-size:.5em;letter-spacing:.06em;margin-left:.35em}
+.mesa p{margin:0}
+.fichas{display:flex;gap:var(--mal-e2)}
+.fichas .chip{flex:1;justify-content:center;font-variant-numeric:tabular-nums}
+.vecinos .list-row{min-height:0;padding:.4rem 0;gap:.6rem}
+.vecinos .icon-circle{width:32px;height:32px;font-weight:700;font-size:.8rem}
+.vecinos .tabular{font-family:var(--mal-mono);font-variant-numeric:tabular-nums}
+.carga{margin-top:calc(var(--mal-e2) * -1)}
+.hud-juego__arriba .fila{gap:var(--mal-e2)}
+.capa{position:absolute;inset:0;z-index:30;display:grid;place-items:center;padding:var(--mal-e4);
+  background:color-mix(in srgb, var(--mal-fondo, #1d1822) 40%, transparent)}
+.capa__panel{width:min(100%, 400px);padding:var(--mal-e5);text-align:center;max-height:100%;overflow:auto}
+.capa__panel .kicker{justify-content:center;margin:0}
+.capa__panel h1,.capa__panel h2{margin:0;line-height:1.05}
+.reglas{list-style:none;padding:0;margin:0;text-align:left;display:grid;gap:var(--mal-e2);font-size:var(--mal-t-caption)}
+.reglas li{display:grid;grid-template-columns:auto 1fr;gap:var(--mal-e2);align-items:start}
+.reglas .icono{margin-top:.15em;color:var(--mal-primary)}
+.gana{color:var(--mal-ok)}
+.pierde{color:var(--mal-danger)}
+</style>
+</head>
+<body class="fondo--aurora">
+<main class="escena">
+  <canvas id="tina" aria-label="La tina del boliche, vista desde arriba" role="img"></canvas>
+
+  <div class="hud-juego">
+    <div class="hud-juego__arriba">
+      <div class="fila">
+        <button class="btn btn--icono" id="b-reglas" type="button" aria-label="Reglas y cambiar de lado">
+          <svg class="icono" aria-hidden="true"><use href="#i-menu"/></svg></button>
+        <button class="btn btn--icono" id="b-sonido" type="button" aria-label="Sonido" aria-pressed="true">
+          <svg class="icono" aria-hidden="true"><use href="#i-altavoz"/></svg></button>
+      </div>
+      <div class="hud-juego__cifras">
+        <p class="marcador" id="saldo" aria-live="polite">$5,00<small>tu plata</small></p>
+        <span class="badge" id="lado">Apostador</span>
+      </div>
+    </div>
+
+    <div class="hud-juego__abajo">
+      <!-- Apostador: eliges cuánto y la banca tira -->
+      <section class="vidrio pila mesa" id="m-apuesta" hidden aria-label="Tu apuesta">
+        <div class="mesa__linea">
+          <p class="kicker">Tu apuesta</p>
+          <p class="caption">Banca: <b id="nombre-banca">Doña Charito</b></p>
+        </div>
+        <div class="fichas" role="group" aria-label="Cuánto apuestas">
+          <button class="chip" type="button" data-ficha="25" aria-pressed="true">25 ctvs</button>
+          <button class="chip" type="button" data-ficha="50" aria-pressed="false">50 ctvs</button>
+          <button class="chip" type="button" data-ficha="100" aria-pressed="false">1 dólar</button>
+        </div>
+        <button class="btn btn--rojo boton-juego btn-block" id="b-apostar" type="button">
+          <svg class="icono" aria-hidden="true"><use href="#i-play"/></svg> Apostar</button>
+        <p class="caption">Pares: gana la banca. Nones: te paga al triple.</p>
+      </section>
+
+      <!-- Banca: los vecinos apuestan y tú lanzas -->
+      <section class="vidrio pila mesa" id="m-banca" hidden aria-label="La banca">
+        <div class="mesa__linea">
+          <p class="kicker">Los vecinos</p>
+          <p class="caption">Si sale non: <b class="pierde" id="riesgo">$0,00</b></p>
+        </div>
+        <div class="vecinos" id="vecinos"></div>
+        <button class="btn btn--rojo boton-juego btn-block" id="b-lanzar" type="button">
+          <svg class="icono" aria-hidden="true"><use href="#i-play"/></svg> Mantén y suelta para lanzar</button>
+        <div class="medidor medidor--continuo medidor--fino carga" aria-hidden="true"><i id="carga"></i></div>
+        <p class="caption">O desliza el dedo desde el borde de la tina.</p>
+      </section>
+
+      <!-- Mientras ruedan -->
+      <section class="vidrio pila mesa" id="m-rueda" hidden aria-live="polite">
+        <p class="kicker" id="rueda-k">Ruedan</p>
+        <p class="caption" id="rueda-t">Dos bolas, celeste y blanca. Se suman los huecos donde caen.</p>
+      </section>
+
+      <!-- El resultado -->
+      <section class="vidrio pila mesa" id="m-fin" hidden aria-live="polite">
+        <div class="mesa__linea">
+          <p class="mesa__suma" id="fin-suma">7<small>NONES</small></p>
+          <span class="badge" id="fin-badge">Paga la banca</span>
+        </div>
+        <p id="fin-texto">—</p>
+        <button class="btn btn--rojo boton-juego btn-block" id="b-otra" type="button">
+          <svg class="icono" aria-hidden="true"><use href="#i-reiniciar"/></svg> Otra</button>
+      </section>
+    </div>
+  </div>
+
+  <!-- Portada, reglas y cambio de lado -->
+  <div class="capa" id="c-inicio">
+    <div class="vidrio pila capa__panel">
+      <p class="kicker">Finados en la Sierra</p>
+      <h1>El boliche</h1>
+      <ul class="reglas">
+        <li><svg class="icono icono--s" aria-hidden="true"><use href="#i-punto"/></svg>
+          <span>La banca lanza dos bolas, una celeste y una blanca, dentro de la tina. Ruedan y caen en un hueco numerado.</span></li>
+        <li><svg class="icono icono--s" aria-hidden="true"><use href="#i-check"/></svg>
+          <span>Se suman los dos números. <b>Pares, gana la banca</b> y se queda con todo.</span></li>
+        <li><svg class="icono icono--s" aria-hidden="true"><use href="#i-estrella"/></svg>
+          <span><b>Nones, la banca paga al triple:</b> por 25 ctvs apostados te llevas 75.</span></li>
+        <li><svg class="icono icono--s" aria-hidden="true"><use href="#i-casa"/></svg>
+          <span>El hueco del centro es <b>de la casa</b>: si una bola cae ahí, gana la banca.</span></li>
+      </ul>
+      <button class="btn btn--rojo boton-juego btn-block" id="b-ser-apostador" type="button">
+        <svg class="icono" aria-hidden="true"><use href="#i-billete"/></svg> Apostar contra la banca</button>
+      <button class="btn boton-juego btn-block" id="b-ser-banca" type="button">
+        <svg class="icono" aria-hidden="true"><use href="#i-balanza"/></svg> Ser la banca</button>
+      <p class="caption">Plata de mentira, se guarda en este navegador. Juego tradicional de Guano y Píllaro.</p>
+    </div>
+  </div>
+
+  <!-- Sin plata -->
+  <div class="capa" id="c-limpio" hidden>
+    <div class="vidrio pila capa__panel">
+      <p class="kicker">Te quedaste limpio</p>
+      <h2>Ni para una peseta.</h2>
+      <p class="caption" id="limpio-t">Doña Charito te fía otros cinco dólares. Para el próximo Finados se los devuelves.</p>
+      <button class="btn btn--rojo boton-juego btn-block" id="b-fiado" type="button">
+        <svg class="icono" aria-hidden="true"><use href="#i-billete"/></svg> Aceptar el fiado</button>
+    </div>
+  </div>
+</main>
+
+<script src="tina.js?v=1"></script>
+<script src="../../../ds/mal/mal.js?v=1.0.17" defer></script>
+<script>
+(function () {
+  'use strict';
+  const $ = id => document.getElementById(id);
+  const lienzo = $('tina'), ctx = lienzo.getContext('2d');
+  const moneda = new Intl.NumberFormat('es-EC', { style: 'currency', currency: 'USD' });
+  const plata = c => moneda.format(c / 100);
+
+  /* ─── lo que se guarda ─────────────────────────────────────── */
+  const CLAVE = 'boliche.v1';
+  const INICIAL = 500;
+  let guardado = {};
+  try { guardado = JSON.parse(localStorage.getItem(CLAVE)) || {}; } catch (e) {}
+  const est = {
+    saldo: Number.isFinite(guardado.saldo) ? guardado.saldo : INICIAL,
+    sonido: guardado.sonido !== false,
+    lado: null,        // 'apostador' | 'banca'
+    fase: 'inicio',    // inicio | apuesta | banca | rueda | fin
+    ficha: 25,
+    apuestas: [],      // [{nombre, monto}] en modo banca
+  };
+  const guardar = () => { try { localStorage.setItem(CLAVE, JSON.stringify({ saldo: est.saldo, sonido: est.sonido })); } catch (e) {} };
+
+  const BANCAS = ['Doña Charito', 'Don Segundo', 'la Tía Rosa'];
+  const VECINOS = ['Don Lucho', 'la Mariíta', 'el Kevin', 'Doña Inés', 'el Pato', 'la Jessi', 'Don Aurelio', 'el Guambra'];
+
+  /* ─── sonido: tres ruidos con WebAudio, sin archivos ───────── */
+  let audio = null;
+  function sonar(tipo, fuerza) {
+    if (!est.sonido) return;
+    try {
+      audio = audio || new (window.AudioContext || window.webkitAudioContext)();
+      if (audio.state === 'suspended') audio.resume();
+      const t = audio.currentTime, o = audio.createOscillator(), g = audio.createGain();
+      o.connect(g); g.connect(audio.destination);
+      const vol = Math.min(1, fuerza || 1);
+      if (tipo === 'choque') { o.type = 'sine'; o.frequency.setValueAtTime(2400, t); g.gain.setValueAtTime(.12 * vol, t); g.gain.exponentialRampToValueAtTime(.001, t + .05); o.start(t); o.stop(t + .06); }
+      else if (tipo === 'pared') { o.type = 'triangle'; o.frequency.setValueAtTime(180, t); g.gain.setValueAtTime(.18 * vol, t); g.gain.exponentialRampToValueAtTime(.001, t + .09); o.start(t); o.stop(t + .1); }
+      else if (tipo === 'cae') { o.type = 'sine'; o.frequency.setValueAtTime(520, t); o.frequency.exponentialRampToValueAtTime(140, t + .16); g.gain.setValueAtTime(.25, t); g.gain.exponentialRampToValueAtTime(.001, t + .22); o.start(t); o.stop(t + .24); }
+      else if (tipo === 'gana' || tipo === 'pierde') {
+        const notas = tipo === 'gana' ? [523, 659, 784, 1047] : [392, 330, 262];
+        o.type = 'triangle'; g.gain.setValueAtTime(.0001, t);
+        notas.forEach((f, i) => { o.frequency.setValueAtTime(f, t + i * .1); g.gain.setValueAtTime(.14, t + i * .1); g.gain.exponentialRampToValueAtTime(.001, t + i * .1 + .09); });
+        o.start(t); o.stop(t + notas.length * .1 + .05);
+      }
+    } catch (e) {}
+  }
+
+  /* ─── la tina ──────────────────────────────────────────────── */
+  let tina = Tina.crear();
+  let geo = { cx: 0, cy: 0, R: 100, dpr: 1 };
+
+  function medir() {
+    const dpr = Math.min(2, window.devicePixelRatio || 1);
+    const w = lienzo.clientWidth, h = lienzo.clientHeight;
+    lienzo.width = Math.round(w * dpr); lienzo.height = Math.round(h * dpr);
+    // la tina va en el hueco que dejan el HUD de arriba y la mesa de abajo
+    const arriba = document.querySelector('.hud-juego__arriba').getBoundingClientRect().bottom + 8;
+    const mesa = [...document.querySelectorAll('.mesa')].find(m => !m.hidden);
+    const abajo = mesa ? mesa.getBoundingClientRect().top - 8 : h - 16;
+    const alto = Math.max(160, abajo - arriba), ancho = w - 24;
+    const R = Math.min(alto, ancho) / 2 / 1.1;
+    geo = { cx: w / 2, cy: arriba + alto / 2, R, dpr };
+  }
+
+  const aPx = (x, y) => [geo.cx + x * geo.R, geo.cy + y * geo.R];
+
+  /* El borde pintado a mano, como en las ferias: bandas de colores. */
+  const BANDAS = ['#e01b6a', '#f5a623', '#1b5faa', '#6fae2e'];
+
+  function dibujar() {
+    const { cx, cy, R, dpr } = geo, c = tina.cfg;
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    ctx.clearRect(0, 0, lienzo.width, lienzo.height);
+
+    // sombra de la tina sobre la mesa
+    ctx.save();
+    ctx.fillStyle = 'rgba(0,0,0,.35)';
+    ctx.filter = 'blur(14px)';
+    ctx.beginPath(); ctx.arc(cx + R * .04, cy + R * .08, R * 1.1, 0, Math.PI * 2); ctx.fill();
+    ctx.restore();
+
+    // el borde: un aro grueso de cemento pintado
+    const n = 24;
+    for (let i = 0; i < n; i++) {
+      const a0 = (i / n) * Math.PI * 2, a1 = ((i + 1) / n) * Math.PI * 2;
+      ctx.beginPath(); ctx.arc(cx, cy, R * 1.1, a0, a1); ctx.arc(cx, cy, R * c.pared, a1, a0, true); ctx.closePath();
+      ctx.fillStyle = BANDAS[i % BANDAS.length]; ctx.fill();
+    }
+    // volumen del borde: luz arriba a la izquierda
+    let g = ctx.createLinearGradient(cx - R, cy - R, cx + R, cy + R);
+    g.addColorStop(0, 'rgba(255,255,255,.35)'); g.addColorStop(.5, 'rgba(255,255,255,0)'); g.addColorStop(1, 'rgba(0,0,0,.35)');
+    ctx.beginPath(); ctx.arc(cx, cy, R * 1.1, 0, Math.PI * 2); ctx.arc(cx, cy, R * c.pared, 0, Math.PI * 2, true);
+    ctx.fillStyle = g; ctx.fill();
+    ctx.lineWidth = 2; ctx.strokeStyle = 'rgba(30,20,30,.6)';
+    ctx.beginPath(); ctx.arc(cx, cy, R * 1.1, 0, Math.PI * 2); ctx.stroke();
+
+    // el cuenco: hondo en el centro, la pared de abajo a la derecha le da la luz
+    ctx.save();
+    ctx.beginPath(); ctx.arc(cx, cy, R * c.pared, 0, Math.PI * 2); ctx.clip();
+    g = ctx.createRadialGradient(cx, cy, 0, cx, cy, R * c.pared);
+    g.addColorStop(0, '#8c7a66'); g.addColorStop(.55, '#b8a58c'); g.addColorStop(.9, '#d9c8ae'); g.addColorStop(1, '#a8957b');
+    ctx.fillStyle = g; ctx.fillRect(cx - R, cy - R, R * 2, R * 2);
+    g = ctx.createLinearGradient(cx - R, cy - R, cx + R, cy + R);
+    g.addColorStop(0, 'rgba(40,25,20,.38)'); g.addColorStop(.5, 'rgba(0,0,0,0)'); g.addColorStop(1, 'rgba(255,245,225,.22)');
+    ctx.fillStyle = g; ctx.fillRect(cx - R, cy - R, R * 2, R * 2);
+    // el anillo pintado donde van los huecos
+    ctx.lineWidth = R * .2; ctx.strokeStyle = 'rgba(27,95,170,.28)';
+    ctx.beginPath(); ctx.arc(cx, cy, R * c.anillo, 0, Math.PI * 2); ctx.stroke();
+    ctx.lineWidth = 1.5; ctx.strokeStyle = 'rgba(255,255,255,.35)';
+    ctx.setLineDash([3, 5]);
+    ctx.beginPath(); ctx.arc(cx, cy, R * (c.anillo + .1), 0, Math.PI * 2); ctx.stroke();
+    ctx.beginPath(); ctx.arc(cx, cy, R * (c.anillo - .1), 0, Math.PI * 2); ctx.stroke();
+    ctx.setLineDash([]);
+    // el ombligo, de la casa
+    ctx.fillStyle = 'rgba(224,27,106,.55)';
+    ctx.beginPath(); ctx.arc(cx, cy, R * (c.ombligo + .07), 0, Math.PI * 2); ctx.fill();
+    ctx.restore();
+
+    // los huecos
+    const ganadores = new Set(tina.bolas.filter(b => b.hueco && b.cayendo >= 1).map(b => b.hueco));
+    for (const h of tina.huecos) {
+      const [x, y] = aPx(h.x, h.y), r = (h.ombligo ? c.ombligo : c.hueco) * R;
+      g = ctx.createRadialGradient(x + r * .25, y + r * .3, r * .1, x, y, r);
+      g.addColorStop(0, '#0b0709'); g.addColorStop(.75, '#241a17'); g.addColorStop(1, '#5a4a3c');
+      ctx.fillStyle = g; ctx.beginPath(); ctx.arc(x, y, r, 0, Math.PI * 2); ctx.fill();
+      ctx.lineWidth = 1.5; ctx.strokeStyle = 'rgba(255,240,215,.45)';
+      ctx.beginPath(); ctx.arc(x, y, r, Math.PI * .1, Math.PI * .9); ctx.stroke();
+      // el número, pintado hacia afuera
+      const sale = h.ombligo ? 0 : 1;
+      const d = Math.hypot(h.x, h.y) || 1;
+      const nx = h.ombligo ? 0 : h.x / d, ny = h.ombligo ? 1 : h.y / d;
+      const [tx, ty] = h.ombligo ? [cx, cy + R * (c.ombligo + .035)] : aPx(h.x + nx * .15 * sale, h.y + ny * .15 * sale);
+      const marcado = ganadores.has(h);
+      ctx.font = `800 ${Math.round(R * (h.ombligo ? .055 : .085))}px Syne, Inter, system-ui, sans-serif`;
+      ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+      if (marcado) {
+        ctx.fillStyle = '#ffc93c';
+        ctx.beginPath(); ctx.arc(tx, ty, R * (h.ombligo ? .07 : .075), 0, Math.PI * 2); ctx.fill();
+        ctx.fillStyle = '#1d1822';
+      } else ctx.fillStyle = h.ombligo ? '#fff' : '#fffaf0';
+      if (h.ombligo) { if (!marcado) ctx.fillText('CASA', tx, ty + R * .02); else ctx.fillText('CASA', tx, ty); }
+      else { ctx.lineWidth = 3; ctx.strokeStyle = marcado ? 'transparent' : 'rgba(29,24,34,.55)'; ctx.strokeText(h.n, tx, ty + 1); ctx.fillText(h.n, tx, ty + 1); }
+    }
+
+    // las bolas
+    for (const b of tina.bolas) dibujarBola(b);
+
+    // el gesto de lanzar, mientras se arrastra
+    if (gesto && gesto.vista) {
+      const { ox, oy, px, py } = gesto.vista;
+      ctx.lineWidth = 3; ctx.strokeStyle = 'rgba(255,201,60,.9)'; ctx.setLineDash([6, 6]);
+      ctx.beginPath(); ctx.moveTo(ox, oy); ctx.lineTo(px, py); ctx.stroke(); ctx.setLineDash([]);
+      ctx.fillStyle = 'rgba(255,201,60,.9)'; ctx.beginPath(); ctx.arc(ox, oy, 6, 0, Math.PI * 2); ctx.fill();
+    }
+  }
+
+  const TONOS = {
+    celeste: ['#d8f1ff', '#5fb4e6', '#1f5f92'],
+    blanca: ['#ffffff', '#e6e4ea', '#8e8a99'],
+  };
+  function dibujarBola(b) {
+    const c = tina.cfg, R = geo.R;
+    let [x, y] = aPx(b.x, b.y);
+    if (b.hueco) {
+      let [hx, hy] = aPx(b.hueco.x, b.hueco.y);
+      // en la casa caben las dos: la segunda se acomoda al lado
+      if (b.hueco.ombligo && tina.bolas.find(o => o.hueco === b.hueco) !== b) hx += c.bola * R * .9;
+      x += (hx - x) * b.cayendo; y += (hy - y) * b.cayendo;
+    }
+    const esc = 1 - b.cayendo * .3, r = c.bola * R * esc;
+    // sombra hacia el fondo del cuenco
+    ctx.fillStyle = `rgba(20,10,10,${.35 * (1 - b.cayendo * .6)})`;
+    ctx.beginPath(); ctx.ellipse(x + r * .35, y + r * .45, r, r * .85, 0, 0, Math.PI * 2); ctx.fill();
+    const t = TONOS[b.color];
+    const g = ctx.createRadialGradient(x - r * .35, y - r * .4, r * .1, x, y, r);
+    g.addColorStop(0, t[0]); g.addColorStop(.5, t[1]); g.addColorStop(1, t[2]);
+    ctx.fillStyle = g; ctx.beginPath(); ctx.arc(x, y, r, 0, Math.PI * 2); ctx.fill();
+    // el ojo de gato de la canica, que gira al rodar
+    ctx.save(); ctx.beginPath(); ctx.arc(x, y, r * .92, 0, Math.PI * 2); ctx.clip();
+    ctx.translate(x, y); ctx.rotate(b.giro * .35);
+    ctx.strokeStyle = b.color === 'celeste' ? 'rgba(255,255,255,.75)' : 'rgba(27,95,170,.7)';
+    ctx.lineWidth = r * .28;
+    ctx.beginPath(); ctx.ellipse(0, 0, r * .75, r * Math.abs(Math.cos(b.giro)) * .55 + r * .05, 0, -1.2, 1.2); ctx.stroke();
+    ctx.restore();
+    ctx.fillStyle = 'rgba(255,255,255,.85)'; ctx.beginPath(); ctx.arc(x - r * .35, y - r * .4, r * .22, 0, Math.PI * 2); ctx.fill();
+    if (b.cayendo > 0) { ctx.fillStyle = `rgba(10,5,5,${b.cayendo * .45})`; ctx.beginPath(); ctx.arc(x, y, r, 0, Math.PI * 2); ctx.fill(); }
+  }
+
+  /* ─── el bucle ─────────────────────────────────────────────── */
+  const DT = 1 / 240;
+  let antes = 0, resto = 0;
+  function cuadro(ahora) {
+    const dt = Math.min(.05, (ahora - antes) / 1000 || 0); antes = ahora;
+    if (est.fase === 'rueda') {
+      resto += dt;
+      while (resto >= DT) {
+        resto -= DT;
+        for (const e of Tina.paso(tina, DT)) {
+          if (e.tipo === 'cae') { sonar('cae'); avisarCaida(e); }
+          else if (e.tipo === 'choque') sonar('choque', e.fuerza / 2);
+          else if (e.tipo === 'pared') sonar('pared', e.fuerza / 2);
+        }
+      }
+      if (Tina.quietas(tina)) terminar();
+    } else if (est.fase !== 'rueda') {
+      // las bolas que ya cayeron terminan de hundirse
+      for (const b of tina.bolas) if (b.hueco && b.cayendo < 1) b.cayendo = Math.min(1, b.cayendo + dt * 4);
+    }
+    if (carga.activa) {
+      carga.t += dt;
+      const f = 1 - Math.abs(1 - (carga.t / 1.1) % 2); // va y viene
+      carga.valor = f; $('carga').style.width = (f * 100).toFixed(1) + '%';
+    }
+    dibujar();
+    requestAnimationFrame(cuadro);
+  }
+
+  function avisarCaida(e) {
+    const color = e.bola.color === 'celeste' ? 'La celeste' : 'La blanca';
+    $('rueda-k').textContent = e.hueco.ombligo ? `${color}, a la casa` : `${color}: ${e.hueco.n}`;
+  }
+
+  /* ─── la mesa: qué panel se ve ────────────────────────────── */
+  function mesa(cual) {
+    for (const id of ['m-apuesta', 'm-banca', 'm-rueda', 'm-fin']) $(id).hidden = id !== cual;
+    medir();
+  }
+
+  function pintarSaldo() {
+    $('saldo').innerHTML = `${plata(est.saldo)}<small>tu plata</small>`;
+    $('lado').textContent = est.lado === 'banca' ? 'Eres la banca' : 'Apostador';
+    document.querySelectorAll('[data-ficha]').forEach(b => {
+      const v = +b.dataset.ficha;
+      b.setAttribute('aria-pressed', String(v === est.ficha));
+      b.disabled = v > est.saldo;
+    });
+  }
+
+  function elegirLado(lado) {
+    est.lado = lado;
+    $('c-inicio').hidden = true;
+    if (!revisarPlata()) return;
+    nuevaRonda();
+  }
+
+  function nuevaRonda() {
+    tina = Tina.crear();
+    if (est.lado === 'apostador') {
+      if (est.ficha > est.saldo) est.ficha = 25;
+      $('nombre-banca').textContent = BANCAS[Math.floor(Math.random() * BANCAS.length)];
+      est.fase = 'apuesta'; mesa('m-apuesta');
+    } else {
+      repartirVecinos();
+      est.fase = 'banca'; mesa('m-banca');
+    }
+    pintarSaldo();
+  }
+
+  /* Los vecinos apuestan lo que la banca puede cubrir: nadie le juega
+     un dólar a quien no tiene para pagarle el triple. */
+  function repartirVecinos() {
+    const nombres = VECINOS.slice().sort(() => Math.random() - .5).slice(0, 3);
+    const tope = Math.floor(est.saldo / 2 / 25) * 25; // lo que la banca puede pagar si sale non
+    let total = 0;
+    est.apuestas = [];
+    for (const nombre of nombres) {
+      const quiere = [25, 25, 50, 50, 100][Math.floor(Math.random() * 5)];
+      const monto = Math.min(quiere, tope - total);
+      if (monto < 25) break;
+      est.apuestas.push({ nombre, monto }); total += monto;
+    }
+    $('vecinos').innerHTML = est.apuestas.map(a =>
+      `<div class="list-row"><span class="icon-circle" aria-hidden="true">${a.nombre.replace(/^(Don|Doña|la|el) /, '').slice(0, 1)}</span>` +
+      `<span>${a.nombre}</span><span class="tabular">${plata(a.monto)}</span></div>`).join('');
+    $('riesgo').textContent = plata(total * 2);
+  }
+
+  /* ─── lanzar ───────────────────────────────────────────────── */
+  function lanzar(origen, angulo, fuerza) {
+    tina = Tina.crear();
+    Tina.tirar(tina, origen, angulo, fuerza);
+    est.fase = 'rueda'; resto = 0;
+    $('rueda-k').textContent = 'Ruedan';
+    $('rueda-t').textContent = est.lado === 'banca'
+      ? 'Ojalá pares. Si cae una en la casa, también es tuyo.'
+      : 'Te conviene que sumen non.';
+    mesa('m-rueda');
+    sonar('pared', .6);
+  }
+
+  // un tiro con oficio: desde cualquier punto del borde, casi de costado
+  function tiroAlAzar(fuerza) {
+    const origen = Math.random() * Math.PI * 2;
+    const dentro = origen + Math.PI;
+    const lado = Math.random() < .5 ? -1 : 1;
+    const angulo = dentro + lado * (.7 + Math.random() * .7);
+    return [origen, angulo, fuerza == null ? .35 + Math.random() * .65 : fuerza];
+  }
+
+  $('b-apostar').addEventListener('click', () => {
+    if (est.fase !== 'apuesta' || est.ficha > est.saldo) return;
+    est.saldo -= est.ficha; est.fase = 'espera'; guardar(); pintarSaldo();
+    $('rueda-k').textContent = `${$('nombre-banca').textContent} sopla las bolas`;
+    $('rueda-t').textContent = 'Y las tira de costado, como se debe.';
+    mesa('m-rueda');
+    setTimeout(() => lanzar(...tiroAlAzar()), 900);
+  });
+  document.querySelectorAll('[data-ficha]').forEach(b => b.addEventListener('click', () => {
+    est.ficha = +b.dataset.ficha; pintarSaldo();
+  }));
+
+  // mantener y soltar: la carga va y viene en el medidor
+  const carga = { activa: false, t: 0, valor: 0 };
+  function cargar() { if (est.fase !== 'banca') return; carga.activa = true; carga.t = 0; carga.valor = 0; }
+  function soltar() {
+    if (!carga.activa) return;
+    carga.activa = false; $('carga').style.width = '0';
+    lanzar(...tiroAlAzar(carga.valor));
+  }
+  const bl = $('b-lanzar');
+  bl.addEventListener('pointerdown', e => { e.preventDefault(); bl.setPointerCapture(e.pointerId); cargar(); });
+  bl.addEventListener('pointerup', soltar);
+  bl.addEventListener('pointercancel', () => { carga.activa = false; $('carga').style.width = '0'; });
+  bl.addEventListener('keydown', e => { if ((e.key === ' ' || e.key === 'Enter') && !e.repeat) { e.preventDefault(); cargar(); } });
+  bl.addEventListener('keyup', e => { if (e.key === ' ' || e.key === 'Enter') { e.preventDefault(); soltar(); } });
+
+  // deslizar desde el borde: sale de donde empieza el dedo, hacia donde va
+  let gesto = null;
+  lienzo.addEventListener('pointerdown', e => {
+    if (est.fase !== 'banca') return;
+    const x = e.clientX, y = e.clientY;
+    const origen = Math.atan2(y - geo.cy, x - geo.cx);
+    const rb = geo.R * (tina.cfg.pared - tina.cfg.bola);
+    gesto = { origen, pts: [{ x, y, t: performance.now() }],
+      vista: { ox: geo.cx + Math.cos(origen) * rb, oy: geo.cy + Math.sin(origen) * rb, px: x, py: y } };
+    lienzo.setPointerCapture(e.pointerId);
+  });
+  lienzo.addEventListener('pointermove', e => {
+    if (!gesto) return;
+    gesto.pts.push({ x: e.clientX, y: e.clientY, t: performance.now() });
+    if (gesto.pts.length > 12) gesto.pts.shift();
+    gesto.vista.px = e.clientX; gesto.vista.py = e.clientY;
+  });
+  lienzo.addEventListener('pointerup', () => {
+    if (!gesto) return;
+    const g = gesto; gesto = null;
+    const ult = g.pts[g.pts.length - 1], ahora = performance.now();
+    const pri = g.pts.find(p => ult.t - p.t < 110) || g.pts[0];
+    const dt = Math.max(16, ult.t - pri.t) / 1000;
+    const vx = (ult.x - pri.x) / dt, vy = (ult.y - pri.y) / dt;
+    const v = Math.hypot(vx, vy) / geo.R; // radios por segundo
+    if (v < .8 || ahora - ult.t > 150) { malDS.aviso('Más rápido: desliza y suelta', ''); return; }
+    // que vaya hacia adentro: como mucho a 80° de la dirección al centro
+    const dentro = g.origen + Math.PI;
+    let ang = Math.atan2(vy, vx), dif = Math.atan2(Math.sin(ang - dentro), Math.cos(ang - dentro));
+    const tope = 80 * Math.PI / 180;
+    dif = Math.max(-tope, Math.min(tope, dif));
+    lanzar(g.origen, dentro + dif, Math.min(1, Math.max(0, (v - .8) / 6)));
+  });
+  lienzo.addEventListener('pointercancel', () => { gesto = null; });
+
+  /* ─── el resultado ─────────────────────────────────────────── */
+  function terminar() {
+    est.fase = 'fin';
+    const r = Tina.resultado(tina);
+    const [a, b] = tina.bolas.map(x => x.hueco.ombligo ? 'casa' : x.hueco.n);
+    const cuenta = a === 'casa' && b === 'casa' ? 'Las dos a la casa'
+      : r.casa ? `${a === 'casa' ? b : a} y una a la casa` : `${a} + ${b} = ${r.suma}`;
+    $('fin-suma').innerHTML = `${r.casa ? 'Casa' : r.suma}<small>${r.casa ? 'GANA LA BANCA' : r.par ? 'PARES' : 'NONES'}</small>`;
+    let texto, gano;
+    if (est.lado === 'apostador') {
+      const banca = $('nombre-banca').textContent;
+      if (r.par) { gano = false; texto = `${cuenta}. ${banca} se queda con tus ${plata(est.ficha)}.`; }
+      else { gano = true; est.saldo += est.ficha * 3; texto = `${cuenta}. ${banca} te paga al triple: te llevas ${plata(est.ficha * 3)}.`; }
+    } else {
+      const total = est.apuestas.reduce((s, x) => s + x.monto, 0);
+      if (r.par) { gano = true; est.saldo += total; texto = `${cuenta}. Recoges ${plata(total)} de la mesa.`; }
+      else { gano = false; est.saldo -= total * 2; texto = `${cuenta}. Pagas al triple: ${plata(total * 3)} a los vecinos (${plata(total)} eran suyos).`; }
+    }
+    $('fin-badge').textContent = gano ? 'Ganas' : 'Pierdes';
+    $('fin-badge').className = 'badge ' + (gano ? 'badge-ok' : 'badge-danger');
+    $('fin-texto').textContent = texto;
+    guardar(); pintarSaldo();
+    sonar(gano ? 'gana' : 'pierde');
+    mesa('m-fin');
+    $('b-otra').focus({ preventScroll: true });
+  }
+
+  function revisarPlata() {
+    const minimo = est.lado === 'banca' ? 50 : 25;
+    if (est.saldo >= minimo) return true;
+    $('limpio-t').textContent = est.lado === 'banca'
+      ? 'Sin plata para cubrir el triple nadie te apuesta. Doña Charito te fía otros cinco dólares.'
+      : 'Doña Charito te fía otros cinco dólares. Para el próximo Finados se los devuelves.';
+    $('c-limpio').hidden = false;
+    return false;
+  }
+
+  $('b-otra').addEventListener('click', () => { if (revisarPlata()) nuevaRonda(); });
+  $('b-fiado').addEventListener('click', () => {
+    est.saldo += INICIAL; guardar(); $('c-limpio').hidden = true; nuevaRonda();
+  });
+  $('b-ser-apostador').addEventListener('click', () => elegirLado('apostador'));
+  $('b-ser-banca').addEventListener('click', () => elegirLado('banca'));
+  $('b-reglas').addEventListener('click', () => {
+    if (est.fase === 'rueda' || est.fase === 'espera') return;
+    $('c-inicio').hidden = false; est.fase = 'inicio'; mesa(null);
+    $('b-ser-apostador').focus({ preventScroll: true });
+  });
+  const bs = $('b-sonido');
+  const pintarSonido = () => bs.setAttribute('aria-pressed', String(est.sonido));
+  bs.addEventListener('click', () => { est.sonido = !est.sonido; pintarSonido(); guardar(); });
+  pintarSonido();
+
+  window.addEventListener('resize', medir);
+  pintarSaldo(); medir();
+  requestAnimationFrame(t => { antes = t; cuadro(t); });
+})();
+</script>
+</body>
+</html>
