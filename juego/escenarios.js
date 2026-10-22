@@ -242,32 +242,37 @@ function tina(THREE, CFG, alt, e, grupo) {
   return { ladoCajita, fondoRedondo: yR, fondoCajita: yK };
 }
 
-/* El tope va a lo largo del eje z, en x = 0, entre los dos agujeros. En
-   la tina de plástico es la nariz de la carita; en las otras puede ser
-   una fila de ladrillos, un muro de cemento o una tabla de canto. */
+/* El tope va un poco más arriba que los agujeros, entre los dos, a lo
+   largo del eje z: es la «l» del «.l.». Se apoya en la cuesta, así que
+   va inclinado. En la tina de plástico es la nariz de la carita; en las
+   otras puede ser una fila de ladrillos, un muro de cemento o una tabla
+   de canto. */
 function tope(THREE, CFG, alt, forma, madera) {
-  const T = CFG.tope, g = new THREE.Group(), y0 = alt(0, 0);
+  const T = CFG.tope, largo = Math.abs(T.z1 - T.z0), zc = (T.z0 + T.z1) / 2;
+  const g = new THREE.Group();
+  g.position.set(0, alt(0, zc), zc);
+  // el extremo de arriba (z1, más lejos del centro) queda más alto
+  g.rotation.x = Math.atan2(alt(0, T.z1) - alt(0, T.z0), Math.abs(T.z1 - T.z0)) * Math.sign(T.z0 - T.z1);
   const mat = color => new THREE.MeshStandardMaterial({ color, roughness: .85 });
   if (forma === 'nariz') {
-    const m = new THREE.Mesh(new THREE.CapsuleGeometry(T.ancho * .95, T.largo - T.ancho * 1.9, 6, 16), mat(0xe8d6bc));
-    m.rotation.x = Math.PI / 2; m.scale.set(1, 1, 1.25); m.position.y = y0 + T.ancho * .55;
+    const m = new THREE.Mesh(new THREE.CapsuleGeometry(T.ancho * .95, largo - T.ancho * 1.9, 6, 16), mat(0xe8d6bc));
+    m.rotation.x = Math.PI / 2; m.scale.set(1, 1, 1.25); m.position.y = T.ancho * .5;
     g.add(m);
   } else if (forma === 'ladrillos') {
-    const n = 3, l = T.largo / n;
+    const n = 2, l = largo / n;
     for (let i = 0; i < n; i++) {
-      const z = -T.largo / 2 + l * (i + .5);
-      const m = new THREE.Mesh(new THREE.BoxGeometry(T.ancho * 1.15, .045, l - .006), mat(i % 2 ? 0xa4532e : 0x9a4a2a));
-      m.position.set(0, alt(0, z) + .016, z); g.add(m);
+      const m = new THREE.Mesh(new THREE.BoxGeometry(T.ancho * 1.2, .045, l - .006), mat(i % 2 ? 0xa4532e : 0x9a4a2a));
+      m.position.set(0, .016, -largo / 2 + l * (i + .5)); g.add(m);
     }
   } else if (forma === 'muro') {
-    const m = new THREE.Mesh(new THREE.BoxGeometry(T.ancho, .05, T.largo), mat(0xb9b6ae));
-    m.position.y = y0 + .02; g.add(m);
-    const lomo = new THREE.Mesh(new THREE.CylinderGeometry(T.ancho / 2, T.ancho / 2, T.largo, 10), mat(0xb9b6ae));
-    lomo.rotation.x = Math.PI / 2; lomo.position.y = y0 + .045; g.add(lomo);
+    const m = new THREE.Mesh(new THREE.BoxGeometry(T.ancho, .05, largo), mat(0xb9b6ae));
+    m.position.y = .02; g.add(m);
+    const lomo = new THREE.Mesh(new THREE.CylinderGeometry(T.ancho / 2, T.ancho / 2, largo, 10), mat(0xb9b6ae));
+    lomo.rotation.x = Math.PI / 2; lomo.position.y = .045; g.add(lomo);
   } else {
     // tabla de canto
-    const m = new THREE.Mesh(new THREE.BoxGeometry(T.ancho * .75, .06, T.largo), madera);
-    m.position.y = y0 + .024; g.add(m);
+    const m = new THREE.Mesh(new THREE.BoxGeometry(T.ancho * .75, .06, largo), madera);
+    m.position.y = .024; g.add(m);
   }
   g.traverse(m => { if (m.isMesh) { m.castShadow = true; m.receiveShadow = true; } });
   return g;

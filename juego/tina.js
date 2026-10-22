@@ -1,10 +1,10 @@
 /* La tina del boliche: la física, sin dibujo.
    La tina es una hondonada honda y redonda —un casquete de esfera—, como
    las de Guano y Píllaro: las paredes son empinadas cerca del borde y el
-   fondo es curvo. En el fondo hay dos agujeros grandes, uno a cada lado
-   de un tope recto que los separa —el «.l.»—: un redondo y una cajita
-   cuadrada. Lo que baja por la izquierda cae en uno y lo que baja por la
-   derecha, en el otro.
+   fondo es curvo. En el fondo hay dos agujeros grandes, juntos, sin nada
+   en medio: un redondo y una cajita cuadrada. Un poco más arriba, entre
+   los dos, está el tope —la «l» del «.l.»—, que reparte lo que baja por
+   ese lado.
 
    La regla: las ocho canicas terminan en los agujeros y se cuentan. Si
    quedan pares en cada uno (4 y 4, 2 y 6, 0 y 8) es PARES; si quedan
@@ -30,11 +30,12 @@
     rodadura: 0.5,   // frenado constante de rodar sobre cemento
     rebote: 0.5,     // contra el borde y el tope
     bola: 0.024,     // radio de una canica: unos 1,5 cm de diámetro
-    // los dos agujeros, uno a cada lado del tope
-    redondo: { x: -0.122, z: 0, r: 0.103 },
-    cajita: { x: 0.118, z: 0, lado: 0.196 },
-    // el tope: un muro recto en el centro, entre los dos agujeros
-    tope: { largo: 0.36, ancho: 0.024 },
+    // los dos agujeros, juntos en el fondo
+    redondo: { x: -0.112, z: 0, r: 0.1 },
+    cajita: { x: 0.108, z: 0, lado: 0.196 },
+    // el tope: recto, un poco más arriba que los agujeros, entre los dos
+    tope: { z0: -0.12, z1: -0.28, ancho: 0.024 },
+    lomo: 2.5,       // entre los dos agujeros el fondo hace un lomito: nadie se queda ahí
     cae: 2.4,        // por debajo de esta velocidad, una canica sobre el agujero cae
     duracion: 12,    // a partir de aquí todo se frena más: nadie espera para siempre
   };
@@ -104,7 +105,14 @@
       const vr = b.vx * ux + b.vz * uz, vt = -b.vx * uz + b.vz * ux;
       const vHv = h2 * vr * vr + (h1 / r) * vt * vt;
       const k = (c.g * c.rueda + vHv) * h1 / (1 + h1 * h1);
-      const ax = -k * ux, az = -k * uz;
+      let ax = -k * ux, az = -k * uz;
+      /* El lomito entre los agujeros: lo que se para en medio se va para
+         un lado o para el otro. */
+      const R = c.redondo;
+      if (Math.abs(b.z) < R.r && Math.abs(b.x) < 0.03) {
+        const lado = b.x === 0 ? (b.vx >= 0 ? 1 : -1) : Math.sign(b.x);
+        ax += lado * c.lomo * (1 - Math.abs(b.x) / 0.03);
+      }
 
       const h = sobre(c, b);
       if (h && Math.hypot(b.vx, b.vz) < cae) {
@@ -130,8 +138,8 @@
         b.x = -nx * lim; b.z = -nz * lim;
         rebotar(b, nx, nz, c.rebote, ev, 'pared');
       }
-      // el tope: un muro recto sobre el eje z, entre los agujeros
-      const T = c.tope, mitad = T.largo / 2, cz = Math.max(-mitad, Math.min(mitad, b.z));
+      // el tope: un tramo recto sobre el eje z, más arriba que los agujeros
+      const T = c.tope, cz = Math.max(Math.min(T.z0, T.z1), Math.min(Math.max(T.z0, T.z1), b.z));
       const dx = b.x, dz = b.z - cz, d = Math.hypot(dx, dz), m = T.ancho / 2 + c.bola;
       if (d < m && d > 0) {
         const nx = dx / d, nz = dz / d;
