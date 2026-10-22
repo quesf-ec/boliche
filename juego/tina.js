@@ -1,54 +1,88 @@
 /* La tina del boliche: la física, sin dibujo.
-   Vista desde arriba, en unidades de radio (el borde está en r = 1).
-   El fondo es un cuenco: todo lo que rueda tiende al centro. Las bolas
-   entran por el borde, dan vueltas, se frenan y caen en un hueco del
-   anillo —que lleva su número— o, si lo cruzan sin caer, acaban en el
-   ombligo del centro, que es de la casa y vale cero.
-   Va aparte para poder tirarla mil veces en node y medir que la regla
-   «pares gana la banca, nones paga al triple» sea pareja. */
+   La tina es una hondonada de cemento en cono, como las de Guano y
+   Píllaro. En el fondo hay dos agujeros —uno redondo, grande, que es
+   PARES, y una cajita cuadrada, pequeña, que es NONES— y un tope de
+   madera al lado que reparte las canicas.
+   Se simula en el plano (x, z), en unidades de radio: el borde de la
+   tina está en r = 1. La gravedad empuja cuesta abajo por el cono, así
+   que lo que se lanza baja dando vueltas, choca con el tope y con las
+   otras canicas y cae en un agujero. La primera que cae decide.
+   Va aparte para poder tirarla miles de veces en node y medir que salga
+   parejo. Quien la dibuja (Three.js) lee x, z, altura(x, z) y `cayendo`. */
 (function (raiz) {
   'use strict';
 
   const CFG = {
-    k: 2.4,          // lo hondo del cuenco: aceleración hacia el centro por unidad de radio
-    roce: 0.3,       // frenado proporcional a la velocidad
-    rodadura: 0.07,  // frenado constante, el que al final las para
-    pared: 0.97,     // radio de la pared interior
-    rebote: 0.55,
-    bola: 0.045,     // radio de una bola
-    anillo: 0.56,    // radio del anillo de huecos
-    huecos: 12,
-    hueco: 0.062,    // radio de un hueco
-    tiro: 0.075,     // el hueco atrae dentro de este radio: el labio
-    atrae: 3.2,
-    cae: 0.95,       // velocidad por debajo de la cual una bola que pisa un hueco cae
-    ombligo: 0.085,
+    canicas: 8,
+    hondo: 0.42,     // lo que baja el cono del borde al fondo (en radios)
+    fondo: 0.2,      // radio del fondo, que es casi plano
+    g: 6.5,          // gravedad, en radios por segundo²
+    roce: 0.22,      // frenado proporcional a la velocidad
+    rodadura: 0.12,  // frenado constante, el que al final las para
+    rebote: 0.5,     // contra el borde y el tope
+    bola: 0.042,     // radio de una canica
+    redondo: { x: 0.075, z: 0.01, r: 0.062 },    // PARES
+    cajita: { x: -0.085, z: -0.02, lado: 0.07 },  // NONES: un cuadrado de este lado
+    tope: { x: 0.12, z: -0.09, angulo: -0.6, largo: 0.18 },  // la cuña de madera, cuidando el redondo
+    labio: 0.035,    // cuánto más allá del agujero ya se siente la caída
+    atrae: 2.2,
+    cae: 0.6,        // por debajo de esta velocidad, una canica sobre el agujero cae
+    duracion: 14,    // a partir de aquí el roce sube: nadie espera para siempre
   };
 
-  /* Los números van salteados alrededor del anillo, como en las tinas
-     pintadas a mano: un par nunca tiene al lado otro par fácil. */
-  const NUMEROS = [1, 8, 3, 10, 5, 12, 7, 2, 9, 4, 11, 6];
-
-  function huecos(cfg) {
-    const out = [];
-    for (let i = 0; i < cfg.huecos; i++) {
-      const a = -Math.PI / 2 + (i / cfg.huecos) * Math.PI * 2;
-      out.push({ x: Math.cos(a) * cfg.anillo, y: Math.sin(a) * cfg.anillo, n: NUMEROS[i % NUMEROS.length] });
+  /* El tope: una cuña de madera tirada en el fondo. Para chocar es una
+     fila de círculos. */
+  function tope(cfg) {
+    const { x: x0, z: z0, angulo: a, largo } = cfg.tope, out = [];
+    for (let i = 0; i < 4; i++) {
+      const t = (i / 3 - 0.5) * largo;
+      out.push({ x: x0 + Math.cos(a) * t, z: z0 + Math.sin(a) * t, r: 0.026 });
     }
-    out.push({ x: 0, y: 0, n: 0, ombligo: true });
-    return out;
+    return { x: x0, z: z0, angulo: a, largo, ancho: 0.05, circulos: out };
+  }
+
+  /* Altura del fondo en (x, z): 0 en el borde, -hondo en el centro.
+     Cono recto, con el fondo redondeado para que no haya pico. */
+  function altura(cfg, x, z) {
+    const r = Math.hypot(x, z), b = cfg.fondo, pend = cfg.hondo / (1 - b * 0.5);
+    if (r >= b) return -cfg.hondo + pend * (r - b * 0.5);
+    return -cfg.hondo + pend * (r * r) / (2 * b);
+  }
+  // la pendiente: lo que empuja cuesta abajo
+  function pendiente(cfg, r) {
+    const b = cfg.fondo, pend = cfg.hondo / (1 - b * 0.5);
+    return r >= b ? pend : pend * r / b;
   }
 
   function crear(cfg) {
     cfg = Object.assign({}, CFG, cfg || {});
-    return { cfg, huecos: huecos(cfg), bolas: [], t: 0 };
+    return { cfg, tope: tope(cfg), bolas: [], t: 0, primera: null };
   }
 
-  /* Una bola entra por el borde con velocidad (vx, vy). */
-  function lanzar(tina, x, y, vx, vy, color) {
-    const b = { x, y, vx, vy, color, hueco: null, cayendo: 0, giro: 0 };
+  function lanzar(tina, x, z, vx, vz, color) {
+    const b = { x, z, vx, vz, color, hueco: null, cayendo: 0, fx: 0, fz: 0 };
     tina.bolas.push(b);
     return b;
+  }
+
+  function rebotar(b, nx, nz, e, ev, tipo) {
+    const vn = b.vx * nx + b.vz * nz;
+    if (vn < 0) {
+      b.vx -= (1 + e) * vn * nx; b.vz -= (1 + e) * vn * nz;
+      if (-vn > 0.1) ev.push({ tipo, fuerza: -vn });
+    }
+  }
+
+  /* ¿Sobre qué agujero está y a qué distancia de su centro? */
+  function sobre(c, b) {
+    const R = c.redondo, dr = Math.hypot(b.x - R.x, b.z - R.z);
+    const K = c.cajita, dx = Math.abs(b.x - K.x), dz = Math.abs(b.z - K.z);
+    const medio = K.lado / 2;
+    return [
+      { cual: 'redondo', x: R.x, z: R.z, dentro: dr < R.r * 0.7, cerca: dr < R.r + c.labio, d: dr, alcance: R.r + c.labio },
+      { cual: 'cajita', x: K.x, z: K.z, dentro: dx < medio * 0.75 && dz < medio * 0.75,
+        cerca: dx < medio + c.labio && dz < medio + c.labio, d: Math.hypot(dx, dz), alcance: (medio + c.labio) * 1.41 },
+    ];
   }
 
   /* Un paso de dt segundos. Devuelve los sucesos —choques y caídas—
@@ -56,92 +90,106 @@
   function paso(tina, dt) {
     const c = tina.cfg, ev = [];
     tina.t += dt;
-    const lento = tina.t > 18 ? 1 + (tina.t - 18) * 0.6 : 1; // nadie espera para siempre
+    const lento = tina.t > c.duracion ? 1 + (tina.t - c.duracion) * 0.8 : 1;
     for (const b of tina.bolas) {
-      if (b.hueco) { b.cayendo = Math.min(1, b.cayendo + dt * 4); continue; }
-      let ax = -c.k * b.x, ay = -c.k * b.y;
-      for (const h of tina.huecos) {
-        // en un hueco del anillo cabe una sola bola; la que llega después pasa por encima
-        if (!h.ombligo && tina.bolas.some(o => o.hueco === h)) continue;
-        const r = h.ombligo ? c.ombligo : c.hueco;
-        const dx = h.x - b.x, dy = h.y - b.y, d = Math.hypot(dx, dy);
-        if (d < r + c.tiro - c.hueco) {
-          const f = c.atrae * (1 - d / (r + c.tiro - c.hueco));
-          ax += (dx / (d || 1)) * f; ay += (dy / (d || 1)) * f;
-          const v = Math.hypot(b.vx, b.vy);
-          if (d < r * 0.7 && (v < c.cae || h.ombligo)) {
-            b.hueco = h; b.vx = b.vy = 0;
-            ev.push({ tipo: 'cae', bola: b, hueco: h, v });
-            break;
-          }
+      if (b.hueco) { b.cayendo = Math.min(1, b.cayendo + dt * 2.2); continue; }
+      const r = Math.hypot(b.x, b.z) || 1e-6;
+      const p = pendiente(c, r);
+      // cuesta abajo, proyectado sobre el plano
+      let ax = -c.g * p / Math.sqrt(1 + p * p) * (b.x / r);
+      let az = -c.g * p / Math.sqrt(1 + p * p) * (b.z / r);
+      for (const h of sobre(c, b)) {
+        if (!h.cerca) continue;
+        const dx = h.x - b.x, dz = h.z - b.z, d = Math.hypot(dx, dz) || 1;
+        const f = c.atrae * Math.max(0, 1 - h.d / h.alcance);
+        ax += (dx / d) * f; az += (dz / d) * f;
+        if (h.dentro && Math.hypot(b.vx, b.vz) < c.cae) {
+          b.hueco = h.cual; b.fx = h.x; b.fz = h.z; b.vx = b.vz = 0;
+          if (!tina.primera) tina.primera = b;
+          ev.push({ tipo: 'cae', bola: b, hueco: h.cual, primera: tina.primera === b });
+          break;
         }
       }
       if (b.hueco) continue;
-      b.vx += ax * dt; b.vy += ay * dt;
-      const v = Math.hypot(b.vx, b.vy);
+      b.vx += ax * dt; b.vz += az * dt;
+      const v = Math.hypot(b.vx, b.vz);
       if (v > 0) {
-        const f = Math.max(0, 1 - (c.roce * lento * dt) - (c.rodadura * lento * dt) / v);
-        b.vx *= f; b.vy *= f;
+        const f = Math.max(0, 1 - c.roce * lento * dt - (c.rodadura * lento * dt) / v);
+        b.vx *= f; b.vz *= f;
       }
-      b.x += b.vx * dt; b.y += b.vy * dt;
-      b.giro += v * dt / c.bola;
-      const r = Math.hypot(b.x, b.y), lim = c.pared - c.bola;
-      if (r > lim) {
-        const nx = b.x / r, ny = b.y / r, vn = b.vx * nx + b.vy * ny;
-        b.x = nx * lim; b.y = ny * lim;
-        if (vn > 0) {
-          b.vx -= (1 + c.rebote) * vn * nx; b.vy -= (1 + c.rebote) * vn * ny;
-          if (vn > 0.15) ev.push({ tipo: 'pared', fuerza: vn });
+      b.x += b.vx * dt; b.z += b.vz * dt;
+      // el borde de la tina
+      const r2 = Math.hypot(b.x, b.z), lim = 1 - c.bola;
+      if (r2 > lim) {
+        const nx = -b.x / r2, nz = -b.z / r2;
+        b.x = -nx * lim; b.z = -nz * lim;
+        rebotar(b, nx, nz, c.rebote, ev, 'pared');
+      }
+      // el tope
+      for (const t of tina.tope.circulos) {
+        const dx = b.x - t.x, dz = b.z - t.z, d = Math.hypot(dx, dz), m = t.r + c.bola;
+        if (d < m && d > 0) {
+          const nx = dx / d, nz = dz / d;
+          b.x = t.x + nx * m; b.z = t.z + nz * m;
+          rebotar(b, nx, nz, c.rebote, ev, 'tope');
         }
       }
     }
-    // choques entre bolas que siguen rodando
+    // entre canicas
     const vivas = tina.bolas.filter(b => !b.hueco);
     for (let i = 0; i < vivas.length; i++) for (let j = i + 1; j < vivas.length; j++) {
       const a = vivas[i], b = vivas[j];
-      const dx = b.x - a.x, dy = b.y - a.y, d = Math.hypot(dx, dy), m = c.bola * 2;
+      const dx = b.x - a.x, dz = b.z - a.z, d = Math.hypot(dx, dz), m = c.bola * 2;
       if (d > 0 && d < m) {
-        const nx = dx / d, ny = dy / d, solapa = (m - d) / 2;
-        a.x -= nx * solapa; a.y -= ny * solapa; b.x += nx * solapa; b.y += ny * solapa;
-        const vr = (b.vx - a.vx) * nx + (b.vy - a.vy) * ny;
+        const nx = dx / d, nz = dz / d, solapa = (m - d) / 2;
+        a.x -= nx * solapa; a.z -= nz * solapa; b.x += nx * solapa; b.z += nz * solapa;
+        const vr = (b.vx - a.vx) * nx + (b.vz - a.vz) * nz;
         if (vr < 0) {
-          const imp = -(1 + 0.9) * vr / 2;
-          a.vx -= imp * nx; a.vy -= imp * ny; b.vx += imp * nx; b.vy += imp * ny;
-          ev.push({ tipo: 'choque', fuerza: -vr });
+          const imp = -(1 + 0.92) * vr / 2;
+          a.vx -= imp * nx; a.vz -= imp * nz; b.vx += imp * nx; b.vz += imp * nz;
+          if (-vr > 0.08) ev.push({ tipo: 'choque', fuerza: -vr });
         }
       }
     }
     return ev;
   }
 
-  const quietas = tina => tina.bolas.length > 0 && tina.bolas.every(b => b.hueco && b.cayendo >= 1);
-
-  /* La regla: se suman los huecos. Par, gana la banca; non, paga al
-     triple. Y el ombligo es de la casa: una bola ahí y gana la banca,
-     sume lo que sume. Es lo que hace que pagar al triple no la arruine. */
-  function resultado(tina) {
-    const suma = tina.bolas.reduce((s, b) => s + (b.hueco ? b.hueco.n : 0), 0);
-    const casa = tina.bolas.some(b => b.hueco && b.hueco.ombligo);
-    return { suma, casa, par: casa || suma % 2 === 0 };
+  /* Ya se sabe el resultado en cuanto cae la primera; el tiro termina
+     cuando todo lo demás también cayó o se quedó quieto. */
+  function quietas(tina) {
+    return tina.bolas.length > 0 && tina.bolas.every(b =>
+      b.hueco ? b.cayendo >= 1 : Math.hypot(b.vx, b.vz) < 0.015);
   }
 
-  /* El tiro de la banca: dos bolas que salen juntas desde el borde, en
-     el punto `origen` (ángulo, en radianes), empujadas en la dirección
-     del gesto. `fuerza` va de 0 a 1. */
+  /* La regla de Guano: la primera canica que cae decide. En el redondo,
+     pares; en la cajita, nones. Si no cae ninguna, el tiro no vale. */
+  function resultado(tina) {
+    const p = tina.primera;
+    return {
+      nulo: !p,
+      par: !!p && p.hueco === 'redondo',
+      redondo: tina.bolas.filter(b => b.hueco === 'redondo').length,
+      cajita: tina.bolas.filter(b => b.hueco === 'cajita').length,
+    };
+  }
+
+  /* El tiro: las ocho salen juntas de la mano, desde el borde en el
+     punto `origen` (ángulo, radianes), hacia `angulo`, con `fuerza` de
+     0 a 1. Se tiran de costado para que den vueltas. */
   function tirar(tina, origen, angulo, fuerza, azar) {
     azar = azar || Math.random;
-    const c = tina.cfg, r = c.pared - c.bola - 0.01;
-    const x0 = Math.cos(origen) * r, y0 = Math.sin(origen) * r;
-    const tx = -Math.sin(origen), ty = Math.cos(origen); // tangente, para separarlas
-    const v = 1.1 + fuerza * 2.6;
-    ['celeste', 'blanca'].forEach((color, i) => {
-      const lado = i === 0 ? -1 : 1;
-      const a = angulo + lado * 0.05 + (azar() - 0.5) * 0.12;
-      const vv = v * (1 + (azar() - 0.5) * 0.14);
-      lanzar(tina, x0 + tx * lado * c.bola * 1.15, y0 + ty * lado * c.bola * 1.15,
-        Math.cos(a) * vv, Math.sin(a) * vv, color);
-    });
+    const c = tina.cfg, r = 1 - c.bola * 1.6;
+    const tx = -Math.sin(origen), tz = Math.cos(origen);
+    const v = 1.0 + fuerza * 2.4;
+    for (let i = 0; i < c.canicas; i++) {
+      const fila = i % 2, col = (i >> 1) - (c.canicas / 2 - 1) / 2;
+      const x0 = Math.cos(origen) * (r - fila * c.bola * 2.2) + tx * col * c.bola * 2.2;
+      const z0 = Math.sin(origen) * (r - fila * c.bola * 2.2) + tz * col * c.bola * 2.2;
+      const a = angulo + col * 0.03 + (azar() - 0.5) * 0.25;
+      const vv = v * (1 + (azar() - 0.5) * 0.3);
+      lanzar(tina, x0, z0, Math.cos(a) * vv, Math.sin(a) * vv, i % 2 ? 'blanca' : 'celeste');
+    }
   }
 
-  raiz.Tina = { CFG, crear, lanzar, paso, quietas, resultado, tirar };
+  raiz.Tina = { CFG, crear, lanzar, paso, quietas, resultado, tirar, altura };
 })(typeof window !== 'undefined' ? window : globalThis);
