@@ -1,14 +1,14 @@
 <!DOCTYPE html>
-<html lang="es" data-marca="juegos">
+<html lang="es" data-marca="boliche">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>El boliche · Finados en la Sierra</title>
 <meta name="description" content="El boliche de Guano y Píllaro, en 3D: la gente grita pares o nones, la banca decide, tú pones tu moneda o pasas, y ocho canicas ruedan por la tina hasta caer en los dos agujeros. Si en cada uno quedan pares, pares; si quedan impares, nones.">
-<meta name="theme-color" content="#1d1822">
+<meta name="theme-color" content="#1B110D">
 <link rel="canonical" href="https://franciscombp.github.io/mal/apps/boliche/juego/">
 <link rel="icon" href="../../../img/icono-boliche.svg" type="image/svg+xml">
-<link rel="preload" href="../../../ds/fonts/syne.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="../../../ds/fonts/montserrat.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="preload" href="../../../ds/fonts/inter.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="modulepreload" href="three.module.min.js">
 <link rel="stylesheet" href="../../../ds/mal/mal.css?v=1.0.17">
@@ -150,8 +150,10 @@ body{-webkit-touch-callout:none}
 @media (prefers-reduced-motion:reduce){.sello.ve,.delta,.escena.tension::after,.pista i{animation:none}.sello.ve{opacity:1;transform:translate(-50%, -50%) rotate(-7deg)}}
 .sin-3d{position:absolute;inset:auto 0 50% 0;text-align:center;padding:var(--mal-e5)}
 </style>
+<!-- el tema propio del juego: un fork del de juegos, ver boliche.css -->
+<link rel="stylesheet" href="boliche.css?v=1">
 </head>
-<body class="fondo--aurora">
+<body>
 <main class="escena">
   <canvas id="tina" aria-label="La tina del boliche: una hondonada con dos agujeros grandes juntos en el fondo —uno redondo y una cajita cuadrada— y un tope recto un poco más arriba, con la gente alrededor" role="img"></canvas>
   <div class="globos" id="globos" aria-hidden="true"></div>
@@ -402,11 +404,12 @@ function textura(ancho, alto, pinta) {
 
 // los brillos que marcan dónde cayó la primera
 const LADO_CAJITA = Math.max(CFG.cajita.lado, CFG.bola * 2.25);
-const brillo = () => new THREE.MeshBasicMaterial({ color: 0xffc93c, transparent: true, opacity: 0, depthWrite: false });
-const brilloRedondo = new THREE.Mesh(new THREE.RingGeometry(CFG.redondo.r + .012, CFG.redondo.r + .024, 40), brillo());
+// el color de cada bando, el mismo del tema: el redondo es celeste (pares), la cajita morada (nones)
+const brillo = color => new THREE.MeshBasicMaterial({ color, transparent: true, opacity: 0, depthWrite: false });
+const brilloRedondo = new THREE.Mesh(new THREE.RingGeometry(CFG.redondo.r + .012, CFG.redondo.r + .024, 40), brillo(0x5FB4E6));
 brilloRedondo.rotation.x = -Math.PI / 2;
 brilloRedondo.position.set(CFG.redondo.x, alt(CFG.redondo.x, CFG.redondo.z) + .012, CFG.redondo.z);
-const brilloCajita = new THREE.Mesh(new THREE.RingGeometry(LADO_CAJITA * .78, LADO_CAJITA * .95, 4, 1, Math.PI / 4), brillo());
+const brilloCajita = new THREE.Mesh(new THREE.RingGeometry(LADO_CAJITA * .78, LADO_CAJITA * .95, 4, 1, Math.PI / 4), brillo(0xB066C9));
 brilloCajita.rotation.x = -Math.PI / 2;
 brilloCajita.position.set(CFG.cajita.x, alt(CFG.cajita.x, CFG.cajita.z) + .012, CFG.cajita.z);
 escena.add(brilloRedondo, brilloCajita);
@@ -1113,6 +1116,7 @@ function decidir() {
   setTimeout(() => { if (est.fase === 'fin') vista.objetivo = 2; }, 300);
   const donde = `Quedaron ${r.redondo} en el redondo y ${r.cajita} en la cajita.`;
   $('fin-suma').innerHTML = `${r.par ? 'Pares' : 'Nones'} <small class="micro">${r.redondo} y ${r.cajita}</small>`;
+  $('fin-suma').dataset.bando = r.par ? 'pares' : 'nones';
   const jugadores = VECINOS.filter(v => v.juega);
   if (gana) {
     // la banca paga el doble: devuelve lo de cada uno y pone otro tanto
@@ -1227,7 +1231,7 @@ function alPiso(e) {
   return rayo.ray.intersectPlane(piso, punto) ? { x: punto.x, z: punto.z } : null;
 }
 const guia = new THREE.Line(new THREE.BufferGeometry().setFromPoints([new THREE.Vector3(), new THREE.Vector3()]),
-  new THREE.LineDashedMaterial({ color: 0xffc93c, dashSize: .04, gapSize: .03 }));
+  new THREE.LineDashedMaterial({ color: 0xF2B33D, dashSize: .04, gapSize: .03 }));
 guia.visible = false; escena.add(guia);
 let gesto = null;
 lienzo.addEventListener('pointerdown', e => {

@@ -1,0 +1,207 @@
+/* ══════════════ TEMA · BOLICHE ══════════════════════════════════
+   Un fork del tema de juegos de mal-ds, para una noche de Finados en
+   la Sierra. Igual que Acolita, declara su capa de referencia y hereda
+   todo lo demás: los componentes son los mismos (.btn, .chip, .vidrio,
+   .marcador…), solo cambia la materia.
+
+   De dónde sale cada cosa:
+   · El maíz de la guagua de pan es el color de marca, y su corteza, la
+     sombra dura de los botones.
+   · La colada morada y el celeste de las canicas son los dos bandos:
+     NONES es morado (la cajita) y PARES es celeste (el redondo). Se
+     usan igual en los botones, en el conteo y en el sello del final.
+   · Los paneles son tablas pintadas, con el filete de los rótulos a
+     mano y una tira de banderines de feria colgada encima.
+   · Los botones son rótulos: Montserrat negrita, mayúsculas, contorno
+     de tinta y sombra dura. Los redondos de arriba son chapas de cola.
+   · Es de noche siempre: se juega alrededor del foco.
+
+   Se activa con `data-marca="boliche"` en el <html>. Va después de
+   mal.css y del <style> de la página. */
+
+:root[data-marca="boliche"]{
+  /* ── los colores de la feria ── */
+  --bo-maiz:#F2B33D;        --bo-corteza:#B86A22;
+  --bo-colada:#7E3592;      --bo-colada-2:#5B2470;
+  --bo-canica:#5FB4E6;      --bo-canica-2:#2F7FB5;
+  --bo-achiote:#D7392B;     --bo-hoja:#4E9A3A;
+  --bo-glaseado:#F28AB8;    /* el rosado del glaseado de las guaguas: tu voz */
+  --bo-papel:#F6EBD3;       --bo-tinta:#24150F;
+  --bo-tabla:#3A271E;       --bo-tabla-2:#2E1F18;
+  --bo-noche:#1B110D;
+
+  /* ── capa 1 · referencia ── */
+  --ref-marca:var(--bo-maiz); --ref-marca-2:var(--bo-corteza); --ref-marca-txt:var(--bo-maiz);
+  --ref-sobre-marca:var(--bo-tinta); --ref-acento:var(--bo-canica); --ref-acento-2:var(--bo-colada);
+  --ref-n0:var(--bo-noche); --ref-n1:#2B1C16; --ref-n2:var(--bo-tabla); --ref-n3:#47302A;
+  --ref-t0:var(--bo-papel); --ref-t1:#E4D2B2; --ref-t2:#BDA683;
+  --ref-borde-rgb:246,235,211; --ref-marca-rgb:242,179,61;
+
+  --ref-display:"Montserrat","Arial Black",system-ui,sans-serif;
+  --ref-texto:"Inter",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --ref-mono:"Montserrat",system-ui,sans-serif;     /* las cifras y los rótulos van pintados, no tecleados */
+  --ref-peso-display:900;
+  --ref-tracking:-.01em;
+
+  --ref-radio:.6;            /* tablas con las esquinas apenas gastadas */
+  --ref-borde:3px;           /* el contorno de tinta de los rótulos */
+  --ref-densidad:1;
+  --ref-tap:52px;
+  --ref-elev-1:0 4px 0 #120A07;
+  --ref-elev-2:0 6px 0 #120A07, 0 16px 30px rgba(0,0,0,.45);
+  --ref-relleno-marca:linear-gradient(180deg, #F8C962 0%, var(--bo-maiz) 55%, #E39A2A 100%);
+  --ref-destello:transparent;
+  --ref-salto:translateY(-2px);
+  --ref-presion:translateY(3px);
+  --ref-fondo:radial-gradient(120% 80% at 50% 0%, #3A2418 0%, var(--bo-noche) 60%);
+  --mal-ok:#7BC96A; --mal-warn:var(--bo-maiz); --mal-danger:#FF7A6E;
+  color-scheme:dark;
+}
+
+/* ── lo que se pinta con eso ── */
+:root[data-marca="boliche"]{
+  /* la tira de banderines: rojo, maíz, celeste, morado y verde, en un cordel */
+  --bo-banderines:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='90' height='22' viewBox='0 0 90 22'%3E%3Cpath d='M0 3 Q45 7 90 3' fill='none' stroke='%23F6EBD3' stroke-width='1.4'/%3E%3Cpath d='M2 3.6 L16 4.3 L9 19Z' fill='%23D7392B'/%3E%3Cpath d='M20 4.4 L34 4.9 L27 20Z' fill='%23F2B33D'/%3E%3Cpath d='M38 5 L52 5 L45 20.5Z' fill='%235FB4E6'/%3E%3Cpath d='M56 4.9 L70 4.4 L63 20Z' fill='%237E3592'/%3E%3Cpath d='M74 4.3 L88 3.6 L81 19Z' fill='%234E9A3A'/%3E%3C/svg%3E");
+  /* la veta de la madera de las tablas */
+  --bo-veta:repeating-linear-gradient(178deg, rgba(255,255,255,.025) 0 2px, transparent 2px 9px,
+            rgba(0,0,0,.06) 9px 10px, transparent 10px 17px);
+}
+
+[data-marca="boliche"] body{background:var(--ref-fondo);color:var(--bo-papel)}
+
+/* ─── las tablas pintadas ─────────────────────────────────── */
+[data-marca="boliche"] .vidrio{
+  position:relative;
+  background:var(--bo-veta), linear-gradient(180deg, color-mix(in srgb, var(--bo-tabla) 96%, transparent), color-mix(in srgb, var(--bo-tabla-2) 97%, transparent));
+  -webkit-backdrop-filter:none;backdrop-filter:none;
+  border:3px solid var(--bo-tinta);
+  border-radius:calc(14px * var(--ref-radio));
+  /* el filete de los rótulos: una raya de maíz por dentro, a mano */
+  box-shadow:inset 0 0 0 3px var(--bo-tabla), inset 0 0 0 5px rgba(242,179,61,.55), var(--ref-elev-2);
+}
+/* los banderines, colgados encima de cada panel */
+[data-marca="boliche"] .mesa::before,
+[data-marca="boliche"] .capa__panel::before{
+  content:"";position:absolute;left:10px;right:10px;top:-13px;height:22px;pointer-events:none;
+  background:var(--bo-banderines) repeat-x left top / 90px 22px;
+  filter:drop-shadow(0 2px 0 rgba(0,0,0,.35));
+}
+[data-marca="boliche"] .capa__panel.portada{overflow:visible}
+[data-marca="boliche"] .portada__pie{border-top:2px dashed rgba(242,179,61,.35)}
+
+/* ─── los rótulos ─────────────────────────────────────────── */
+[data-marca="boliche"] .kicker{color:var(--bo-maiz);font-weight:800;letter-spacing:.14em}
+[data-marca="boliche"] .kicker::before{width:9px;height:9px;background:var(--bo-maiz);transform:rotate(45deg);border-radius:1px}
+[data-marca="boliche"] .micro{font-weight:700;color:var(--ref-t2)}
+[data-marca="boliche"] .caption{color:var(--ref-t1)}
+[data-marca="boliche"] h1,[data-marca="boliche"] h2{font-family:var(--mal-display);font-weight:900;letter-spacing:-.01em}
+/* el título de la portada, como letrero de feria: maíz con sombra roja y de tinta */
+[data-marca="boliche"] .portada h1{
+  color:var(--bo-maiz);text-transform:uppercase;letter-spacing:.01em;
+  text-shadow:3px 3px 0 var(--bo-achiote), 6px 6px 0 var(--bo-tinta);
+}
+[data-marca="boliche"] .mesa__dice,[data-marca="boliche"] .mesa__suma{font-family:var(--mal-display);font-weight:900;letter-spacing:-.01em}
+[data-marca="boliche"] .reglas .icono{color:var(--bo-maiz)}
+[data-marca="boliche"] .reglas b{color:var(--bo-papel)}
+
+/* ─── botones-rótulo ──────────────────────────────────────── */
+[data-marca="boliche"] .btn{
+  font-family:var(--mal-display);font-weight:800;text-transform:uppercase;letter-spacing:.04em;
+  background:var(--bo-papel);color:var(--bo-tinta);border:3px solid var(--bo-tinta);
+  box-shadow:0 4px 0 #120A07;
+}
+[data-marca="boliche"] .btn:hover{color:var(--bo-tinta);border-color:var(--bo-tinta);box-shadow:0 6px 0 #120A07}
+[data-marca="boliche"] .btn:active{transform:translateY(3px);box-shadow:0 1px 0 #120A07}
+[data-marca="boliche"] .btn--rojo,[data-marca="boliche"] .btn--rojo:hover{
+  background:var(--ref-relleno-marca);color:var(--bo-tinta);border-color:var(--bo-tinta);
+  box-shadow:0 4px 0 var(--bo-corteza), 0 4px 0 3px var(--bo-tinta);
+}
+[data-marca="boliche"] .btn--rojo:active{box-shadow:0 1px 0 var(--bo-corteza), 0 1px 0 3px var(--bo-tinta)}
+[data-marca="boliche"] .btn:disabled{opacity:.45;filter:saturate(.4)}
+[data-marca="boliche"] .btn-ghost{background:transparent;border-color:transparent;box-shadow:none;color:var(--bo-maiz)}
+[data-marca="boliche"] .boton-juego{font-size:1.05rem}
+
+/* los dos bandos: pares celeste (el redondo), nones morado (la cajita) */
+[data-marca="boliche"] [data-grita="pares"]{background:linear-gradient(180deg, #8FCDF0, var(--bo-canica));color:var(--bo-tinta);
+  box-shadow:0 4px 0 var(--bo-canica-2), 0 4px 0 3px var(--bo-tinta)}
+[data-marca="boliche"] [data-grita="nones"]{background:linear-gradient(180deg, #A456B8, var(--bo-colada));color:var(--bo-papel);
+  box-shadow:0 4px 0 var(--bo-colada-2), 0 4px 0 3px var(--bo-tinta)}
+[data-marca="boliche"] [data-grita]:active{box-shadow:0 1px 0 var(--bo-tinta)}
+[data-marca="boliche"] .conteo{font-family:var(--mal-display);font-weight:900}
+[data-marca="boliche"] #n-pares{color:var(--bo-canica)}
+[data-marca="boliche"] #n-nones{color:#C88BDA}
+[data-marca="boliche"] .conteo .medidor{height:12px;background:var(--bo-colada);border:2px solid var(--bo-tinta);border-radius:999px;
+  --mal-relleno-medidor:var(--bo-canica)}
+
+/* las chapas de cola: los botones redondos de arriba */
+[data-marca="boliche"] .btn--icono{
+  border-radius:50%;border:0;color:var(--bo-papel);
+  background:radial-gradient(circle, var(--bo-achiote) 0 56%, transparent 57%),
+    repeating-conic-gradient(#A82418 0 10deg, #E04B3B 10deg 20deg);
+  box-shadow:0 3px 0 #120A07, inset 0 0 0 2px rgba(0,0,0,.25);
+}
+[data-marca="boliche"] .btn--icono:hover{color:var(--bo-papel);box-shadow:0 4px 0 #120A07}
+[data-marca="boliche"] .btn--icono[aria-pressed=false]{filter:grayscale(.9) brightness(.8)}
+
+/* los escenarios, como etiquetas de papel */
+[data-marca="boliche"] .chip{
+  font-family:var(--mal-display);font-weight:800;text-transform:uppercase;letter-spacing:.05em;font-size:.78rem;
+  background:transparent;color:var(--bo-papel);border:2px dashed rgba(246,235,211,.45);border-radius:10px;
+}
+[data-marca="boliche"] .chip[aria-pressed=true]{background:var(--bo-papel);color:var(--bo-tinta);border:2px solid var(--bo-tinta);
+  box-shadow:0 3px 0 #120A07}
+
+/* ─── la plata ────────────────────────────────────────────── */
+[data-marca="boliche"] .marcador{font-family:var(--mal-display);font-weight:900;color:var(--bo-maiz);letter-spacing:-.02em;
+  text-shadow:2px 2px 0 var(--bo-achiote), 4px 4px 0 var(--bo-tinta)}
+[data-marca="boliche"] .marcador small{color:var(--bo-papel);text-shadow:0 1px 2px rgba(0,0,0,.8);font-weight:800;letter-spacing:.14em}
+[data-marca="boliche"] .badge{font-family:var(--mal-display);font-weight:800;background:var(--bo-tinta);color:var(--bo-papel);
+  border:2px solid rgba(246,235,211,.4);border-radius:8px}
+[data-marca="boliche"] .badge-ok{background:var(--bo-hoja);color:#fff;border-color:var(--bo-tinta)}
+[data-marca="boliche"] .badge-danger{background:var(--bo-achiote);color:#fff;border-color:var(--bo-tinta)}
+[data-marca="boliche"] .ficha{font-family:var(--mal-display);font-weight:900}
+[data-marca="boliche"] .medidor--continuo{border-radius:999px}
+[data-marca="boliche"] #carga{background:linear-gradient(90deg, var(--bo-canica), var(--bo-maiz) 55%, var(--bo-achiote))}
+
+/* ─── lo que grita la gente ───────────────────────────────── */
+[data-marca="boliche"] .globo{font-family:var(--mal-display);font-weight:800;background:var(--bo-papel);color:var(--bo-tinta);
+  border-color:var(--bo-tinta);box-shadow:0 3px 0 var(--bo-tinta)}
+[data-marca="boliche"] .globo--banca{background:var(--bo-maiz)}
+[data-marca="boliche"] .globo--tu{background:var(--bo-glaseado)}
+
+/* ─── el sello del final: un timbre de caucho, con su desgaste ── */
+[data-marca="boliche"] .sello{font-family:var(--mal-display);font-weight:900;text-transform:uppercase;
+  border:6px double #fff;border-radius:14px;
+  -webkit-mask-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='g'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2'/%3E%3CfeColorMatrix values='0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 -2.2 2.1'/%3E%3C/filter%3E%3Crect width='160' height='160' filter='url(%23g)'/%3E%3C/svg%3E");
+  mask-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='g'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2'/%3E%3CfeColorMatrix values='0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 -2.2 2.1'/%3E%3C/filter%3E%3Crect width='160' height='160' filter='url(%23g)'/%3E%3C/svg%3E");
+  -webkit-mask-size:160px;mask-size:160px}
+[data-marca="boliche"] .sello--gana{background:var(--bo-hoja)}
+[data-marca="boliche"] .sello--pierde{background:var(--bo-achiote)}
+[data-marca="boliche"] .sello--pasa{background:#6A5A4A}
+
+/* ─── el resto ────────────────────────────────────────────── */
+[data-marca="boliche"] .capa{background:color-mix(in srgb, var(--bo-noche) 55%, transparent)}
+[data-marca="boliche"] .escena::after{box-shadow:inset 0 0 120px 24px rgba(242,179,61,.42)}
+[data-marca="boliche"] .toast{font-family:var(--mal-display);font-weight:700;background:var(--bo-papel);color:var(--bo-tinta);
+  border:3px solid var(--bo-tinta);border-radius:12px;box-shadow:0 4px 0 #120A07}
+
+/* el resultado y la plata en la mesa, del color de su bando */
+[data-marca="boliche"] #fin-suma[data-bando="pares"]{color:var(--bo-canica)}
+[data-marca="boliche"] #fin-suma[data-bando="nones"]{color:#C88BDA}
+[data-marca="boliche"] #fin-suma small{color:var(--ref-t2)}
+[data-marca="boliche"] #en-mesa{color:var(--bo-maiz)}
+[data-marca="boliche"] #reloj-gente{background:var(--bo-maiz)}
+
+/* La portada sigue cabiendo con los banderines encima: el panel deja el
+   hueco de arriba, y es el cuerpo —no el panel— el que se desplaza. */
+[data-marca="boliche"] .capa{padding-top:calc(var(--mal-e4) + 14px)}
+/* la fila de la capa mide lo que hay de alto —no lo que mide el panel—,
+   para que el `max-height` del panel sí lo limite */
+[data-marca="boliche"] .capa{grid-template-rows:minmax(0, 1fr)}
+[data-marca="boliche"] .portada{max-height:100%;align-self:center}
+[data-marca="boliche"] .portada__cuerpo{flex:1 1 auto;min-height:0}
+[data-marca="boliche"] .portada__pie{flex:none}
+@media (orientation:landscape) and (max-height:520px){
+  [data-marca="boliche"] .portada h1{font-size:1.9rem;text-shadow:2px 2px 0 var(--bo-achiote), 4px 4px 0 var(--bo-tinta)}
+  [data-marca="boliche"] .portada__pie .caption{display:none}
+}
