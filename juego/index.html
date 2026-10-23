@@ -110,8 +110,6 @@ body{-webkit-touch-callout:none}
   .mesa__dice{font-size:1.15rem}
   .boton-juego{min-height:52px}
   .capa__panel{width:min(100%, 640px)}
-  .portada__cuerpo{display:grid;grid-template-columns:1fr 1fr;align-items:start;column-gap:var(--mal-e5)}
-  .portada__cuerpo > .kicker,.portada__cuerpo > h1{grid-column:1 / -1}
   .portada h1{font-size:2.2rem}
 }
 
@@ -148,6 +146,33 @@ body{-webkit-touch-callout:none}
   text-shadow:0 1px 3px rgba(0,0,0,.7)}
 @keyframes desliza{0%{opacity:0;transform:translate(0, 0)}15%{opacity:1}70%{opacity:1;transform:translate(96px, -18px)}100%{opacity:0;transform:translate(104px, -20px)}}
 @media (prefers-reduced-motion:reduce){.sello.ve,.delta,.escena.tension::after,.pista i{animation:none}.sello.ve{opacity:1;transform:translate(-50%, -50%) rotate(-7deg)}}
+/* La explicación, paso a paso */
+.expls{display:grid}
+.expl{display:grid;gap:var(--mal-e3);justify-items:center;text-align:center;animation:expl .3s var(--mal-ease, ease)}
+.expl[hidden]{display:none}
+.expl__dibujo{width:100%;max-width:300px;height:auto;display:block}
+.expl__t{font-size:1.35rem;margin:0;display:flex;align-items:center;gap:.5rem;justify-content:center}
+.expl__n{display:inline-grid;place-items:center;width:1.7rem;height:1.7rem;border-radius:50%;font-size:.95rem;
+  background:var(--mal-primary);color:var(--mal-on-primary);flex:none}
+.expl__x{margin:0;max-width:34ch;font-size:var(--mal-t-cuerpo);line-height:1.45;color:var(--mal-on-surface-2)}
+.expl .lugares{width:100%}
+.puntos{display:flex;justify-content:center;gap:8px}
+.puntos i{width:9px;height:9px;border-radius:50%;background:var(--mal-outline-2);transition:width .2s, background .2s}
+.puntos i.ve{width:24px;border-radius:5px;background:var(--mal-primary)}
+.portada__pie .opciones > .btn-ghost{flex:0 0 auto}
+@keyframes expl{from{opacity:0;transform:translateX(14px)}to{opacity:1;transform:none}}
+@media (prefers-reduced-motion:reduce){.expl{animation:none}}
+@media (orientation:landscape) and (max-height:520px){
+  .expl{grid-template-columns:minmax(0, 1fr) minmax(0, 1fr);text-align:left;justify-items:start;align-items:center;column-gap:var(--mal-e5)}
+  .expl__dibujo{grid-row:span 2;max-width:240px;max-height:150px}
+  /* acostado no sobra alto: el título se achica y el rótulo de arriba se va */
+  .portada .kicker{display:none}
+  .portada h1{font-size:1.5rem !important;text-shadow:2px 2px 0 #D7392B, 3px 3px 0 #24150F !important}
+  .portada__cuerpo{gap:var(--mal-e2) !important;padding-top:var(--mal-e3) !important}
+  .expl__x{font-size:.92rem}
+  .expl__t{justify-content:flex-start}
+  .expl:last-child{grid-template-columns:1fr}
+}
 .sin-3d{position:absolute;inset:auto 0 50% 0;text-align:center;padding:var(--mal-e5)}
 </style>
 <!-- el tema propio del juego: un fork del de juegos, ver boliche.css -->
@@ -163,7 +188,7 @@ body{-webkit-touch-callout:none}
   <div class="hud-juego">
     <div class="hud-juego__arriba">
       <div class="fila">
-        <button class="btn btn--icono" id="b-reglas" type="button" aria-label="Reglas">
+        <button class="btn btn--icono" id="b-reglas" type="button" aria-label="Cómo se juega">
           <svg class="icono" aria-hidden="true"><use href="#i-menu"/></svg></button>
         <button class="btn btn--icono" id="b-sonido" type="button" aria-label="Sonido" aria-pressed="true">
           <svg class="icono" aria-hidden="true"><use href="#i-altavoz"/></svg></button>
@@ -245,35 +270,54 @@ body{-webkit-touch-callout:none}
   </div>
 
   <!-- Portada y reglas -->
+  <!-- La pantalla inicial: cómo se juega, paso a paso, y al final dónde -->
   <div class="capa" id="c-inicio">
-    <div class="vidrio capa__panel portada">
+    <div class="vidrio capa__panel portada" role="dialog" aria-labelledby="titulo-juego">
       <div class="portada__cuerpo">
         <p class="kicker">Finados en la Sierra</p>
-        <h1>El boliche</h1>
-        <ul class="reglas">
-          <li><svg class="icono icono--s" aria-hidden="true"><use href="#i-altavoz"/></svg>
-            <span><b>La gente grita</b> pares o nones y la banca va por lo que pide la mayoría.</span></li>
-          <li><svg class="icono icono--s" aria-hidden="true"><use href="#i-billete"/></svg>
-            <span><b>¿Va a jugar o no?</b> Pones tus monedas en la mesa o pasas.</span></li>
-          <li><svg class="icono icono--s" aria-hidden="true"><use href="#i-punto"/></svg>
-            <span><b>Caen las ocho</b> y se cuentan: 4 y 4 o 2 y 6, pares; 3 y 5 o 1 y 7, nones.</span></li>
-          <li><svg class="icono icono--s" aria-hidden="true"><use href="#i-estrella"/></svg>
-            <span>Si sale lo de la gente, <b>la banca paga el doble</b>. Si no, barre la mesa.</span></li>
-        </ul>
-        <div class="pila pila--estrecha">
-          <p class="micro">¿Dónde se juega?</p>
-          <div class="lugares" role="group" aria-label="Dónde se juega">
-            <button class="chip" type="button" data-escenario="comunidad" aria-pressed="true">Comunidad</button>
-            <button class="chip" type="button" data-escenario="patio" aria-pressed="false">Patio</button>
-            <button class="chip" type="button" data-escenario="plaza" aria-pressed="false">Plaza</button>
-            <button class="chip" type="button" data-escenario="tienda" aria-pressed="false">Tienda</button>
-          </div>
+        <h1 id="titulo-juego">El boliche</h1>
+        <div class="expls" id="expls" aria-live="polite">
+          <section class="expl" data-paso="0" aria-label="Paso 1 de 5">
+            <svg class="expl__dibujo" viewBox="0 0 220 120" aria-hidden="true"><circle cx="40" cy="62" r="13" fill="#B97D55" stroke="#24150F" stroke-width="2"/><circle cx="36" cy="60" r="1.6" fill="#24150F"/><circle cx="44" cy="60" r="1.6" fill="#24150F"/><ellipse cx="40" cy="67" rx="3.5" ry="3" fill="#24150F"/><path d="M23 92 Q40 70 57 92Z" fill="#9B1D2A" stroke="#24150F" stroke-width="2"/><circle cx="110" cy="52" r="13" fill="#B97D55" stroke="#24150F" stroke-width="2"/><circle cx="106" cy="50" r="1.6" fill="#24150F"/><circle cx="114" cy="50" r="1.6" fill="#24150F"/><ellipse cx="110" cy="57" rx="3.5" ry="3" fill="#24150F"/><path d="M93 82 Q110 60 127 82Z" fill="#5A1A1A" stroke="#24150F" stroke-width="2"/><ellipse cx="110" cy="42" rx="17" ry="3.5" fill="#24150F"/><rect x="102" y="31" width="16" height="11" rx="2" fill="#24150F"/><circle cx="180" cy="62" r="13" fill="#B97D55" stroke="#24150F" stroke-width="2"/><circle cx="176" cy="60" r="1.6" fill="#24150F"/><circle cx="184" cy="60" r="1.6" fill="#24150F"/><ellipse cx="180" cy="67" rx="3.5" ry="3" fill="#24150F"/><path d="M163 92 Q180 70 197 92Z" fill="#2F7D4A" stroke="#24150F" stroke-width="2"/><rect x="17.0" y="19" width="46" height="20" rx="10" fill="#5FB4E6" stroke="#24150F" stroke-width="2"/><path d="M36 38 L40 45 L44 38" fill="#5FB4E6" stroke="#24150F" stroke-width="2"/><text x="40" y="33.5" text-anchor="middle" font-family="Montserrat,Arial Black,sans-serif" font-weight="900" font-size="9" fill="#24150F">¡PARES!</text><rect x="157.0" y="19" width="46" height="20" rx="10" fill="#7E3592" stroke="#24150F" stroke-width="2"/><path d="M176 38 L180 45 L184 38" fill="#7E3592" stroke="#24150F" stroke-width="2"/><text x="180" y="33.5" text-anchor="middle" font-family="Montserrat,Arial Black,sans-serif" font-weight="900" font-size="9" fill="#F6EBD3">¡NONES!</text><rect x="68.0" y="3" width="84" height="20" rx="10" fill="#F2B33D" stroke="#24150F" stroke-width="2"/><path d="M106 22 L110 29 L114 22" fill="#F2B33D" stroke="#24150F" stroke-width="2"/><text x="110" y="17.5" text-anchor="middle" font-family="Montserrat,Arial Black,sans-serif" font-weight="900" font-size="9" fill="#24150F">¿PARES O NONES?</text><rect x="20" y="104" width="180" height="9" rx="4.5" fill="#7E3592" stroke="#24150F" stroke-width="2"/><rect x="20" y="104" width="108" height="9" rx="4.5" fill="#5FB4E6" stroke="#24150F" stroke-width="2"/></svg>
+            <h2 class="expl__t"><span class="expl__n">1</span> La gente grita</h2>
+            <p class="expl__x">Cada vecino grita <b>pares</b> o <b>nones</b>. Grita tú también para convencerlos: la banca va por lo que pida la mayoría.</p>
+          </section>
+          <section class="expl" data-paso="1" hidden aria-label="Paso 2 de 5">
+            <svg class="expl__dibujo" viewBox="0 0 220 120" aria-hidden="true"><circle cx="110" cy="40" r="13" fill="#B97D55" stroke="#24150F" stroke-width="2"/><circle cx="106" cy="38" r="1.6" fill="#24150F"/><circle cx="114" cy="38" r="1.6" fill="#24150F"/><ellipse cx="110" cy="45" rx="3.5" ry="3" fill="#24150F"/><path d="M93 70 Q110 48 127 70Z" fill="#5A1A1A" stroke="#24150F" stroke-width="2"/><ellipse cx="110" cy="30" rx="17" ry="3.5" fill="#24150F"/><rect x="102" y="19" width="16" height="11" rx="2" fill="#24150F"/><rect x="64.0" y="-1" width="92" height="20" rx="10" fill="#F2B33D" stroke="#24150F" stroke-width="2"/><path d="M106 18 L110 25 L114 18" fill="#F2B33D" stroke="#24150F" stroke-width="2"/><text x="110" y="13.5" text-anchor="middle" font-family="Montserrat,Arial Black,sans-serif" font-weight="900" font-size="9" fill="#24150F">¿VA A JUGAR O NO?</text><ellipse cx="60" cy="98" rx="16" ry="6" fill="#D9D5CB" stroke="#24150F" stroke-width="2"/><ellipse cx="60" cy="96" rx="16" ry="6" fill="#F4F1EA" stroke="#24150F" stroke-width="2"/><ellipse cx="60" cy="91" rx="16" ry="6" fill="#D9D5CB" stroke="#24150F" stroke-width="2"/><ellipse cx="60" cy="89" rx="16" ry="6" fill="#F4F1EA" stroke="#24150F" stroke-width="2"/><ellipse cx="60" cy="84" rx="16" ry="6" fill="#D9D5CB" stroke="#24150F" stroke-width="2"/><ellipse cx="60" cy="82" rx="16" ry="6" fill="#F4F1EA" stroke="#24150F" stroke-width="2"/><text x="60" y="117" text-anchor="middle" font-family="Montserrat,sans-serif" font-weight="900" font-size="9" fill="#F2B33D">$0,75</text><rect x="112" y="78" width="44" height="22" rx="8" fill="#F2B33D" stroke="#24150F" stroke-width="2"/><text x="134" y="93" text-anchor="middle" font-family="Montserrat,sans-serif" font-weight="900" font-size="9" fill="#24150F">JUEGO</text><rect x="162" y="78" width="44" height="22" rx="8" fill="#F6EBD3" stroke="#24150F" stroke-width="2"/><text x="184" y="93" text-anchor="middle" font-family="Montserrat,sans-serif" font-weight="900" font-size="9" fill="#24150F">PASO</text></svg>
+            <h2 class="expl__t"><span class="expl__n">2</span> ¿Va a jugar o no?</h2>
+            <p class="expl__x">Si tú querías lo otro, igual puedes entrar. <b>Pon tus monedas</b> en la mesa y di «Juego», o pasa esta vuelta.</p>
+          </section>
+          <section class="expl" data-paso="2" hidden aria-label="Paso 3 de 5">
+            <svg class="expl__dibujo" viewBox="0 0 220 120" aria-hidden="true"><ellipse cx="110" cy="62" rx="98" ry="52" fill="#B8B2A6" stroke="#24150F" stroke-width="2.5"/><ellipse cx="110" cy="64" rx="80" ry="40" fill="#9C968B"/><ellipse cx="110" cy="68" rx="52" ry="24" fill="#857F75"/><path d="M58 40 C 20 60, 60 104, 120 98 S 170 70, 128 66" fill="none" stroke="#F2B33D" stroke-width="2.5" stroke-dasharray="5 5"/><circle cx="99" cy="70" r="9" fill="#24150F" stroke="#C9C6BE" stroke-width="2.5"/><rect x="113" y="61" width="17" height="17" fill="#24150F" stroke="#A8763F" stroke-width="2.5"/><rect x="111" y="40" width="4" height="15" fill="#A4532E"/><circle cx="58" cy="40" r="7" fill="#5FB4E6" stroke="#24150F" stroke-width="1.5"/><circle cx="56" cy="37.5" r="2" fill="#fff" opacity=".85"/><circle cx="40" cy="62" r="7" fill="#F6EBD3" stroke="#24150F" stroke-width="1.5"/><circle cx="38" cy="59.5" r="2" fill="#fff" opacity=".85"/><circle cx="150" cy="92" r="7" fill="#5FB4E6" stroke="#24150F" stroke-width="1.5"/><circle cx="148" cy="89.5" r="2" fill="#fff" opacity=".85"/><circle cx="172" cy="66" r="7" fill="#F6EBD3" stroke="#24150F" stroke-width="1.5"/><circle cx="170" cy="63.5" r="2" fill="#fff" opacity=".85"/><circle cx="80" cy="98" r="7" fill="#F6EBD3" stroke="#24150F" stroke-width="1.5"/><circle cx="78" cy="95.5" r="2" fill="#fff" opacity=".85"/><circle cx="128" cy="66" r="7" fill="#5FB4E6" stroke="#24150F" stroke-width="1.5"/><circle cx="126" cy="63.5" r="2" fill="#fff" opacity=".85"/></svg>
+            <h2 class="expl__t"><span class="expl__n">3</span> Ruedan las ocho</h2>
+            <p class="expl__x">La banca suelta <b>ocho canicas</b> en la tina. Dan vueltas, chocan con el tope y caen en los dos agujeros del fondo.</p>
+          </section>
+          <section class="expl" data-paso="3" hidden aria-label="Paso 4 de 5">
+            <svg class="expl__dibujo" viewBox="0 0 220 120" aria-hidden="true"><circle cx="32" cy="58" r="26" fill="#24150F" stroke="#C9C6BE" stroke-width="3"/><circle cx="24" cy="50" r="6.5" fill="#F6EBD3" stroke="#24150F" stroke-width="1.5"/><circle cx="22" cy="47.5" r="2" fill="#fff" opacity=".85"/><circle cx="40" cy="50" r="6.5" fill="#5FB4E6" stroke="#24150F" stroke-width="1.5"/><circle cx="38" cy="47.5" r="2" fill="#fff" opacity=".85"/><circle cx="24" cy="66" r="6.5" fill="#F6EBD3" stroke="#24150F" stroke-width="1.5"/><circle cx="22" cy="63.5" r="2" fill="#fff" opacity=".85"/><circle cx="40" cy="66" r="6.5" fill="#5FB4E6" stroke="#24150F" stroke-width="1.5"/><circle cx="38" cy="63.5" r="2" fill="#fff" opacity=".85"/><rect x="60" y="34" width="48" height="48" fill="#24150F" stroke="#A8763F" stroke-width="3"/><circle cx="76" cy="50" r="6.5" fill="#F6EBD3" stroke="#24150F" stroke-width="1.5"/><circle cx="74" cy="47.5" r="2" fill="#fff" opacity=".85"/><circle cx="92" cy="50" r="6.5" fill="#5FB4E6" stroke="#24150F" stroke-width="1.5"/><circle cx="90" cy="47.5" r="2" fill="#fff" opacity=".85"/><circle cx="76" cy="66" r="6.5" fill="#F6EBD3" stroke="#24150F" stroke-width="1.5"/><circle cx="74" cy="63.5" r="2" fill="#fff" opacity=".85"/><circle cx="92" cy="66" r="6.5" fill="#5FB4E6" stroke="#24150F" stroke-width="1.5"/><circle cx="90" cy="63.5" r="2" fill="#fff" opacity=".85"/><text x="58" y="108" text-anchor="middle" font-family="Montserrat,sans-serif" font-weight="900" font-size="12" fill="#5FB4E6">4 Y 4 · PARES</text><line x1="110" y1="20" x2="110" y2="100" stroke="#F2B33D" stroke-width="2" stroke-dasharray="3 4"/><circle cx="136" cy="58" r="26" fill="#24150F" stroke="#C9C6BE" stroke-width="3"/><circle cx="128" cy="50" r="6.5" fill="#F6EBD3" stroke="#24150F" stroke-width="1.5"/><circle cx="126" cy="47.5" r="2" fill="#fff" opacity=".85"/><circle cx="144" cy="50" r="6.5" fill="#5FB4E6" stroke="#24150F" stroke-width="1.5"/><circle cx="142" cy="47.5" r="2" fill="#fff" opacity=".85"/><circle cx="128" cy="66" r="6.5" fill="#F6EBD3" stroke="#24150F" stroke-width="1.5"/><circle cx="126" cy="63.5" r="2" fill="#fff" opacity=".85"/><rect x="164" y="34" width="48" height="48" fill="#24150F" stroke="#A8763F" stroke-width="3"/><circle cx="180" cy="50" r="6.5" fill="#F6EBD3" stroke="#24150F" stroke-width="1.5"/><circle cx="178" cy="47.5" r="2" fill="#fff" opacity=".85"/><circle cx="196" cy="50" r="6.5" fill="#5FB4E6" stroke="#24150F" stroke-width="1.5"/><circle cx="194" cy="47.5" r="2" fill="#fff" opacity=".85"/><circle cx="180" cy="66" r="6.5" fill="#F6EBD3" stroke="#24150F" stroke-width="1.5"/><circle cx="178" cy="63.5" r="2" fill="#fff" opacity=".85"/><circle cx="196" cy="66" r="6.5" fill="#5FB4E6" stroke="#24150F" stroke-width="1.5"/><circle cx="194" cy="63.5" r="2" fill="#fff" opacity=".85"/><circle cx="188" cy="58" r="6.5" fill="#F6EBD3" stroke="#24150F" stroke-width="1.5"/><circle cx="186" cy="55.5" r="2" fill="#fff" opacity=".85"/><text x="162" y="108" text-anchor="middle" font-family="Montserrat,sans-serif" font-weight="900" font-size="12" fill="#C88BDA">3 Y 5 · NONES</text></svg>
+            <h2 class="expl__t"><span class="expl__n">4</span> Se cuentan</h2>
+            <p class="expl__x">Si en cada agujero quedan pares —<b>4 y 4, 2 y 6</b>— es pares. Si quedan impares —<b>3 y 5, 1 y 7</b>— es nones. Si sale lo de la gente, <b>la banca paga el doble</b>.</p>
+          </section>
+          <section class="expl" data-paso="4" hidden aria-label="Paso 5 de 5">
+            <h2 class="expl__t"><span class="expl__n">5</span> ¿Dónde se juega?</h2>
+            <div class="lugares" role="group" aria-label="Dónde se juega">
+              <button class="chip" type="button" data-escenario="comunidad" aria-pressed="true">Comunidad</button>
+              <button class="chip" type="button" data-escenario="patio" aria-pressed="false">Patio</button>
+              <button class="chip" type="button" data-escenario="plaza" aria-pressed="false">Plaza</button>
+              <button class="chip" type="button" data-escenario="tienda" aria-pressed="false">Tienda</button>
+            </div>
+            <p class="expl__x">Empiezas con <b>cinco dólares</b> de mentira, que se guardan en este navegador.</p>
+          </section>
         </div>
       </div>
       <div class="portada__pie">
-        <button class="btn btn--rojo boton-juego btn-block" id="b-jugar" type="button">
-          <svg class="icono" aria-hidden="true"><use href="#i-play"/></svg> Acercarse a la tina</button>
-        <p class="caption">Plata de mentira, se guarda en este navegador.</p>
+        <div class="puntos" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i></div>
+        <div class="opciones">
+          <button class="btn btn-ghost" id="b-saltar" type="button">Saltar</button>
+          <button class="btn btn--rojo boton-juego" id="b-siguiente" type="button">Siguiente
+            <svg class="icono" aria-hidden="true"><use href="#i-flecha-der"/></svg></button>
+          <button class="btn btn--rojo boton-juego" id="b-jugar" type="button" hidden>
+            <svg class="icono" aria-hidden="true"><use href="#i-play"/></svg> ¡A la tina!</button>
+        </div>
       </div>
     </div>
   </div>
@@ -1196,10 +1240,39 @@ document.querySelectorAll('[data-escenario]').forEach(b => b.addEventListener('c
   ponerCanicas(tina);
 }));
 pintarLugares();
+/* La explicación: cinco pasos; se avanza con «Siguiente», deslizando o
+   con las flechas, y «Saltar» va directo a escoger dónde jugar. */
+const PASOS = 5;
+let enPaso = 0;
+function irAPaso(n) {
+  enPaso = Math.max(0, Math.min(PASOS - 1, n));
+  document.querySelectorAll('.expl').forEach(el => { el.hidden = +el.dataset.paso !== enPaso; });
+  document.querySelectorAll('.puntos i').forEach((el, k) => el.classList.toggle('ve', k === enPaso));
+  const ultimo = enPaso === PASOS - 1;
+  $('b-siguiente').hidden = ultimo; $('b-jugar').hidden = !ultimo; $('b-saltar').hidden = ultimo;
+  (ultimo ? $('b-jugar') : $('b-siguiente')).focus({ preventScroll: true });
+}
+$('b-siguiente').addEventListener('click', () => irAPaso(enPaso + 1));
+$('b-saltar').addEventListener('click', () => irAPaso(PASOS - 1));
+{
+  let x0 = null;
+  const caja = $('expls');
+  caja.addEventListener('pointerdown', e => { x0 = e.clientX; });
+  caja.addEventListener('pointerup', e => {
+    if (x0 == null) return;
+    const dx = e.clientX - x0; x0 = null;
+    if (Math.abs(dx) > 40) irAPaso(enPaso + (dx < 0 ? 1 : -1));
+  });
+  $('c-inicio').addEventListener('keydown', e => {
+    if (e.key === 'ArrowRight') irAPaso(enPaso + 1);
+    else if (e.key === 'ArrowLeft') irAPaso(enPaso - 1);
+  });
+}
+irAPaso(0);
 $('b-jugar').addEventListener('click', () => { $('c-inicio').hidden = true; if (revisarPlata()) nuevaRonda(); });
 $('b-reglas').addEventListener('click', () => {
   if (est.fase !== 'fin' && est.fase !== 'inicio') return;
-  $('c-inicio').hidden = false; $('b-jugar').focus({ preventScroll: true });
+  $('c-inicio').hidden = false; irAPaso(0);
 });
 const bs = $('b-sonido');
 const pintarSonido = () => bs.setAttribute('aria-pressed', String(est.sonido));
