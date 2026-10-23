@@ -25,6 +25,7 @@ body{margin:0;overflow:hidden;overscroll-behavior:none;-webkit-user-select:none;
 .mesa .kicker{margin:0}
 .mesa p{margin:0}
 .mesa__linea{display:flex;align-items:baseline;justify-content:space-between;gap:var(--mal-e3)}
+.mesa__linea > *{white-space:nowrap}
 .mesa__dice{font-family:var(--mal-display);font-weight:800;font-size:clamp(1.25rem, 1rem + 1.4vw, 1.6rem);
   line-height:1.1;letter-spacing:-.02em}
 .mesa__suma{font-family:var(--mal-display);font-weight:800;font-size:clamp(1.6rem, 1.1rem + 2.4vw, 2.2rem);
@@ -39,14 +40,19 @@ body{margin:0;overflow:hidden;overscroll-behavior:none;-webkit-user-select:none;
 
 /* la mano: las monedas que puedes poner en la mesa */
 .mano{display:flex;align-items:center;gap:var(--mal-e2);min-height:56px}
-.ficha{width:48px;height:48px;border-radius:50%;flex:none;cursor:grab;touch-action:none;
+.ficha{width:52px;height:52px;border-radius:50%;flex:none;cursor:grab;touch-action:none;
   border:2px solid #8f8a80;font:700 .7rem/1 var(--mal-mono);color:#4a463f;
   background:radial-gradient(circle at 35% 30%, #fbfaf6, #d9d5cb 55%, #a9a497);
   box-shadow:inset 0 0 0 4px rgba(255,255,255,.35), 0 3px 0 #7d786d}
 .ficha:active{cursor:grabbing}
 .ficha[disabled]{opacity:.25;cursor:not-allowed}
 .ficha--fantasma{position:fixed;z-index:60;pointer-events:none;transform:translate(-50%, -50%) scale(1.12)}
-.mano__total{margin-left:auto;text-align:right}
+.mano__recoger{margin-left:auto;text-align:right;display:grid;justify-items:end;gap:2px;min-width:0}
+.mano__recoger .mesa__suma{font-size:1.5rem}
+.mano__recoger .btn{min-height:32px;padding:.2rem .5rem}
+#b-recoger[aria-hidden=true]{visibility:hidden}
+@media (max-width:380px){.ficha{width:46px;height:46px}.mano{gap:6px}}
+.ficha.puesta{visibility:hidden}
 
 /* lo que grita la gente: un globo encima de cada cabeza */
 .globos{position:absolute;inset:0;pointer-events:none;z-index:15}
@@ -73,6 +79,75 @@ body{margin:0;overflow:hidden;overscroll-behavior:none;-webkit-user-select:none;
 .reglas .icono{margin-top:.15em;color:var(--mal-primary)}
 .lugares{display:grid;grid-template-columns:1fr 1fr;gap:var(--mal-e2)}
 .lugares .chip{justify-content:center}
+/* En el teléfono todo se hace con el dedo: sin zoom por doble toque, sin
+   el menú de copiar al dejar el dedo quieto y sin el destello gris. */
+button,.ficha{touch-action:manipulation;-webkit-tap-highlight-color:transparent}
+body{-webkit-touch-callout:none}
+
+/* La portada: lo de leer se desplaza y el botón de jugar queda siempre
+   a la vista, abajo. */
+.portada{display:flex;flex-direction:column;padding:0;overflow:hidden;gap:0;width:min(100%, 440px)}
+.portada h1{white-space:nowrap}
+.portada__cuerpo{overflow:auto;padding:var(--mal-e5) var(--mal-e5) var(--mal-e3);display:flex;flex-direction:column;gap:var(--mal-e4)}
+.portada__pie{padding:var(--mal-e3) var(--mal-e5) var(--mal-e5);display:grid;gap:var(--mal-e2);
+  border-top:1px solid rgba(255,255,255,.12)}
+
+/* Pantallas chicas: menos margen alrededor y paneles a todo lo ancho. */
+@media (max-width:480px){
+  .hud-juego{padding:calc(env(safe-area-inset-top, 0px) + 12px) calc(env(safe-area-inset-right, 0px) + 12px)
+    calc(env(safe-area-inset-bottom, 0px) + 12px) calc(env(safe-area-inset-left, 0px) + 12px)}
+  .mesa{width:100%;padding:var(--mal-e3) var(--mal-e4) var(--mal-e4);gap:var(--mal-e3)}
+  .capa{padding:12px}
+  .portada__cuerpo{padding:var(--mal-e4) var(--mal-e4) var(--mal-e3);gap:var(--mal-e3)}
+  .portada__pie{padding:var(--mal-e3) var(--mal-e4) var(--mal-e4)}
+  .portada h1{font-size:2.4rem}
+  .mesa__dice{font-size:1.2rem}
+  .lugares .chip{min-height:44px;padding-inline:.5rem}
+}
+/* Acostado: la mesa va a un lado y la tina se corre al espacio libre. */
+@media (orientation:landscape) and (max-height:520px){
+  .mesa{width:min(46vw, 360px);max-height:calc(100dvh - 92px);overflow:auto;padding:var(--mal-e3) var(--mal-e4);gap:var(--mal-e2)}
+  .mesa__dice{font-size:1.15rem}
+  .boton-juego{min-height:52px}
+  .capa__panel{width:min(100%, 640px)}
+  .portada__cuerpo{display:grid;grid-template-columns:1fr 1fr;align-items:start;column-gap:var(--mal-e5)}
+  .portada__cuerpo > .kicker,.portada__cuerpo > h1{grid-column:1 / -1}
+  .portada h1{font-size:2.2rem}
+}
+
+/* El sello del final: grande, torcido, como un timbre. */
+.sello{position:absolute;left:50%;top:24%;z-index:25;pointer-events:none;text-align:center;
+  font-family:var(--mal-display);font-weight:800;font-size:clamp(2.6rem, 12vw, 5.5rem);line-height:.9;
+  color:#fff;padding:.18em .4em .22em;border:5px solid #fff;border-radius:18px;
+  box-shadow:0 8px 0 rgba(0,0,0,.25), 0 18px 40px rgba(0,0,0,.35);
+  transform:translate(-50%, -50%) rotate(-7deg) scale(0);opacity:0}
+.sello small{display:block;font-family:var(--mal-mono);font-size:.28em;letter-spacing:.12em;margin-top:.25em}
+.sello--gana{background:#2f8f3a}.sello--pierde{background:#c0262d}.sello--pasa{background:#5a4d66}
+.sello.ve{animation:sello 1.9s cubic-bezier(.2,1.4,.4,1) both}
+@keyframes sello{0%{opacity:0;transform:translate(-50%, -50%) rotate(-18deg) scale(2.2)}
+  14%{opacity:1;transform:translate(-50%, -50%) rotate(-7deg) scale(1)}
+  80%{opacity:1;transform:translate(-50%, -50%) rotate(-7deg) scale(1)}
+  100%{opacity:0;transform:translate(-50%, -62%) rotate(-7deg) scale(.9)}}
+/* lo que entra o sale de tu plata, flotando junto al marcador */
+.delta{position:absolute;right:0;top:100%;font:800 1.2rem/1 var(--mal-mono);pointer-events:none;
+  animation:delta 1.6s ease-out both}
+.delta--mas{color:#7ad36a}.delta--menos{color:#ff8a80}
+@keyframes delta{from{opacity:0;transform:translateY(8px)}20%{opacity:1}to{opacity:0;transform:translateY(-26px)}}
+.hud-juego__cifras{position:relative}
+/* cuando falta una canica: la pantalla late */
+.escena::after{content:"";position:absolute;inset:0;pointer-events:none;z-index:14;opacity:0;transition:opacity .4s;
+  box-shadow:inset 0 0 120px 24px rgba(224,27,106,.45)}
+.escena.tension::after{opacity:1;animation:latido .8s ease-in-out infinite}
+@keyframes latido{50%{opacity:.45}}
+/* la pista para lanzar deslizando: un dedo que pasa por el borde */
+.pista{position:absolute;z-index:16;width:150px;height:60px;transform:translate(-50%, -50%);pointer-events:none}
+.pista[hidden]{display:none}
+.pista i{position:absolute;left:12px;top:22px;width:30px;height:30px;border-radius:50%;
+  background:rgba(255,255,255,.92);box-shadow:0 0 0 7px rgba(255,201,60,.5);animation:desliza 1.5s ease-in-out infinite}
+.pista b{position:absolute;left:0;right:0;bottom:-18px;text-align:center;font:700 .78rem/1 var(--mal-texto);color:#fff;
+  text-shadow:0 1px 3px rgba(0,0,0,.7)}
+@keyframes desliza{0%{opacity:0;transform:translate(0, 0)}15%{opacity:1}70%{opacity:1;transform:translate(96px, -18px)}100%{opacity:0;transform:translate(104px, -20px)}}
+@media (prefers-reduced-motion:reduce){.sello.ve,.delta,.escena.tension::after,.pista i{animation:none}.sello.ve{opacity:1;transform:translate(-50%, -50%) rotate(-7deg)}}
 .sin-3d{position:absolute;inset:auto 0 50% 0;text-align:center;padding:var(--mal-e5)}
 </style>
 </head>
@@ -80,6 +155,8 @@ body{margin:0;overflow:hidden;overscroll-behavior:none;-webkit-user-select:none;
 <main class="escena">
   <canvas id="tina" aria-label="La tina del boliche: una hondonada con dos agujeros grandes juntos en el fondo —uno redondo y una cajita cuadrada— y un tope recto un poco más arriba, con la gente alrededor" role="img"></canvas>
   <div class="globos" id="globos" aria-hidden="true"></div>
+  <div class="sello" id="sello" aria-hidden="true"></div>
+  <div class="pista" id="pista" hidden aria-hidden="true"><i></i><b>Desliza de costado</b></div>
 
   <div class="hud-juego">
     <div class="hud-juego__arriba">
@@ -114,23 +191,26 @@ body{margin:0;overflow:hidden;overscroll-behavior:none;-webkit-user-select:none;
 
       <!-- 2 · ¿Va a jugar o no? -->
       <section class="vidrio pila mesa" id="m-apuesta" hidden aria-label="Tu apuesta">
-        <p class="mesa__dice" id="apuesta-dice">Vamos por pares. ¿Va a jugar o no?</p>
+        <p class="kicker" id="apuesta-vamos">Vamos por pares</p>
+        <p class="mesa__dice" id="apuesta-dice">«¿Va a jugar o no?»</p>
         <p class="caption" id="apuesta-nota"></p>
+        <!-- nada aquí cambia de tamaño al poner monedas: si el panel creciera,
+             el botón «Juego» quedaría bajo el dedo y se apostaría sin querer -->
         <div class="mano" id="mano" role="group" aria-label="Tus monedas: arrástralas a la mesa o tócalas">
           <button class="ficha" type="button" aria-label="Poner 25 centavos">25¢</button>
           <button class="ficha" type="button" aria-label="Poner 25 centavos">25¢</button>
           <button class="ficha" type="button" aria-label="Poner 25 centavos">25¢</button>
           <button class="ficha" type="button" aria-label="Poner 25 centavos">25¢</button>
-          <div class="mano__total">
+          <div class="mano__recoger">
             <p class="micro">En la mesa</p>
             <p class="mesa__suma" id="en-mesa">$0,00</p>
+            <button class="btn btn-ghost btn--sm" id="b-recoger" type="button" aria-hidden="true" tabindex="-1">Recoger</button>
           </div>
         </div>
         <div class="opciones">
           <button class="btn btn--rojo boton-juego" id="b-juego" type="button" disabled>Juego</button>
           <button class="btn boton-juego" id="b-paso" type="button">Paso</button>
         </div>
-        <button class="btn btn-ghost btn--sm" id="b-recoger" type="button" hidden>Recoger mis monedas</button>
       </section>
 
       <!-- 3 · Lanzas tú (cuando la banca te da la mano) -->
@@ -164,31 +244,35 @@ body{margin:0;overflow:hidden;overscroll-behavior:none;-webkit-user-select:none;
 
   <!-- Portada y reglas -->
   <div class="capa" id="c-inicio">
-    <div class="vidrio pila capa__panel">
-      <p class="kicker">Finados en la Sierra</p>
-      <h1>El boliche</h1>
-      <ul class="reglas">
-        <li><svg class="icono icono--s" aria-hidden="true"><use href="#i-altavoz"/></svg>
-          <span><b>La gente grita pares o nones</b> y la banca va por lo que pide la mayoría. Grita tú también: se puede convencer.</span></li>
-        <li><svg class="icono icono--s" aria-hidden="true"><use href="#i-billete"/></svg>
-          <span>La banca pregunta: <b>¿va a jugar o no?</b> Pon tus monedas en la mesa o pasa, aunque tú quisieras lo otro.</span></li>
-        <li><svg class="icono icono--s" aria-hidden="true"><use href="#i-punto"/></svg>
-          <span>Ocho canicas ruedan por la tina y caen en los dos agujeros del fondo. <b>Se cuentan:</b> 4 y 4 o 2 y 6 es pares; 3 y 5 o 1 y 7 es nones. La última decide.</span></li>
-        <li><svg class="icono icono--s" aria-hidden="true"><use href="#i-estrella"/></svg>
-          <span>Si sale lo de la gente, <b>la banca paga el doble</b> a todos. Si no, barre la mesa. La banca tiene buena mano, pero también pierde.</span></li>
-      </ul>
-      <div class="pila pila--estrecha">
-        <p class="micro">¿Dónde se juega?</p>
-        <div class="lugares" role="group" aria-label="Dónde se juega">
-          <button class="chip" type="button" data-escenario="comunidad" aria-pressed="true">En la comunidad</button>
-          <button class="chip" type="button" data-escenario="patio" aria-pressed="false">En el patio</button>
-          <button class="chip" type="button" data-escenario="plaza" aria-pressed="false">En la plaza</button>
-          <button class="chip" type="button" data-escenario="tienda" aria-pressed="false">En la tienda</button>
+    <div class="vidrio capa__panel portada">
+      <div class="portada__cuerpo">
+        <p class="kicker">Finados en la Sierra</p>
+        <h1>El boliche</h1>
+        <ul class="reglas">
+          <li><svg class="icono icono--s" aria-hidden="true"><use href="#i-altavoz"/></svg>
+            <span><b>La gente grita</b> pares o nones y la banca va por lo que pide la mayoría.</span></li>
+          <li><svg class="icono icono--s" aria-hidden="true"><use href="#i-billete"/></svg>
+            <span><b>¿Va a jugar o no?</b> Pones tus monedas en la mesa o pasas.</span></li>
+          <li><svg class="icono icono--s" aria-hidden="true"><use href="#i-punto"/></svg>
+            <span><b>Caen las ocho</b> y se cuentan: 4 y 4 o 2 y 6, pares; 3 y 5 o 1 y 7, nones.</span></li>
+          <li><svg class="icono icono--s" aria-hidden="true"><use href="#i-estrella"/></svg>
+            <span>Si sale lo de la gente, <b>la banca paga el doble</b>. Si no, barre la mesa.</span></li>
+        </ul>
+        <div class="pila pila--estrecha">
+          <p class="micro">¿Dónde se juega?</p>
+          <div class="lugares" role="group" aria-label="Dónde se juega">
+            <button class="chip" type="button" data-escenario="comunidad" aria-pressed="true">Comunidad</button>
+            <button class="chip" type="button" data-escenario="patio" aria-pressed="false">Patio</button>
+            <button class="chip" type="button" data-escenario="plaza" aria-pressed="false">Plaza</button>
+            <button class="chip" type="button" data-escenario="tienda" aria-pressed="false">Tienda</button>
+          </div>
         </div>
       </div>
-      <button class="btn btn--rojo boton-juego btn-block" id="b-jugar" type="button">
-        <svg class="icono" aria-hidden="true"><use href="#i-play"/></svg> Acercarse a la tina</button>
-      <p class="caption">Plata de mentira, se guarda en este navegador. Juego tradicional de Guano y Píllaro.</p>
+      <div class="portada__pie">
+        <button class="btn btn--rojo boton-juego btn-block" id="b-jugar" type="button">
+          <svg class="icono" aria-hidden="true"><use href="#i-play"/></svg> Acercarse a la tina</button>
+        <p class="caption">Plata de mentira, se guarda en este navegador.</p>
+      </div>
     </div>
   </div>
 
@@ -277,6 +361,13 @@ function sonar(tipo, fuerza) {
     else if (tipo === 'cae') golpe('sine', 640, 150, .26, .22);
     else if (tipo === 'moneda') golpe('square', 1900, 2600, .05, .06);
   } catch (e) {}
+}
+
+/* En el teléfono, también se siente: una vibración corta para cada cosa.
+   Va con el mismo botón que el sonido. */
+function vibrar(patron) {
+  if (!est.sonido) return;
+  try { if (navigator.vibrate) navigator.vibrate(patron); } catch (e) {}
 }
 
 /* ─── la escena ────────────────────────────────────────────── */
@@ -383,14 +474,51 @@ function grita(quien, texto, ms = 1800, sub) {
 }
 let hablando = null;   // a quien mira la gente mientras no ruedan
 const cabeza = new THREE.Vector3();
+const borde = new THREE.Vector3();
 function moverGlobos() {
   const w = lienzo.clientWidth, h = lienzo.clientHeight;
+  // el espacio libre: debajo de los botones de arriba y encima del panel
+  const techo = document.querySelector('.hud-juego__arriba').getBoundingClientRect().bottom + 40;
+  const mesaVisible = [...document.querySelectorAll('.mesa')].find(m => !m.hidden);
+  const caja = mesaVisible && mesaVisible.getBoundingClientRect();
+  const puestos = [];
   for (const [quien, el] of globos) {
     if (!el.classList.contains('ve')) continue;
-    if (quien === TU) { el.style.left = '50%'; el.style.top = `${h * .62}px`; continue; }
-    quien.persona.globo(cabeza); cabeza.project(camara);
-    el.style.left = `${Math.min(w - 50, Math.max(50, (cabeza.x + 1) / 2 * w))}px`;
-    el.style.top = `${Math.max(86, (1 - cabeza.y) / 2 * h)}px`;
+    const mitad = el.offsetWidth / 2 + 8;
+    let x, y;
+    if (quien === TU) { x = w / 2; y = h * .62; }
+    else { quien.persona.globo(cabeza); cabeza.project(camara); x = (cabeza.x + 1) / 2 * w; y = (1 - cabeza.y) / 2 * h; }
+    x = Math.min(w - mitad, Math.max(mitad, x));
+    y = Math.max(techo, y);
+    // si el panel está debajo, el globo no se mete detrás
+    if (caja && x + mitad > caja.left && x - mitad < caja.right) y = Math.min(y, caja.top - 8);
+    // que no se encime con otro globo: si choca, sube
+    const alto = el.offsetHeight + 6;
+    for (const p of puestos) if (Math.abs(p.x - x) < p.mitad + mitad && Math.abs(p.y - y) < alto) {
+      // sube, y si ya no cabe arriba, se corre hacia el centro
+      if (p.y - alto >= techo) y = p.y - alto;
+      else x = x > w / 2 ? p.x - p.mitad - mitad : p.x + p.mitad + mitad;
+    }
+    x = Math.min(w - mitad, Math.max(mitad, x));
+    // si después de correrse sigue encima de otro, mejor no se ve
+    const encima = puestos.some(p => Math.abs(p.x - x) < p.mitad + mitad - 4 && Math.abs(p.y - y) < alto - 4);
+    el.style.visibility = encima ? 'hidden' : '';
+    if (encima) continue;
+    puestos.push({ x, y, mitad });
+    el.style.left = `${x}px`; el.style.top = `${y}px`;
+  }
+  // la pista para lanzar: sobre el borde de tu lado de la tina
+  const pista = $('pista');
+  if (!pista.hidden) {
+    let px = w / 2, py = h / 2;
+    for (const grados of [90, 115, 140, 165, 180]) {
+      const a = grados * Math.PI / 180;
+      borde.set(Math.cos(a) * .95, 0, Math.sin(a) * .95).project(camara);
+      px = (borde.x + 1) / 2 * w; py = (1 - borde.y) / 2 * h;
+      // que no quede debajo del panel (abajo en vertical, a la izquierda acostado)
+      if (!caja || py < caja.top - 60 || px > caja.right + 80) break;
+    }
+    pista.style.left = `${Math.min(w - 80, Math.max(80, px))}px`; pista.style.top = `${py - 24}px`;
   }
 }
 
@@ -547,17 +675,27 @@ function medir() {
   vista.lejos.set(0, Math.sin(elev) * D, Math.cos(elev) * D);
   vista.cerca.set(0, Math.sin(52 * Math.PI / 180) * D * .58, Math.cos(52 * Math.PI / 180) * D * .58);
   // al final, encima de los agujeros, para contar
-  vista.encima.set(0, -.55 + Math.sin(62 * Math.PI / 180) * D * .26, Math.cos(62 * Math.PI / 180) * D * .26);
+  /* Encima: que quepan los dos agujeros y el tope —unos 0,34 de ancho y
+     0,3 de alto— y un poco de margen. El ancho manda en vertical. */
+  // acostado sobra ancho: manda el alto, y se puede acercar más
+  const dEncima = aspecto > 1.3 ? .24 / tan : Math.max(.3 / (tan * aspecto), .24 / tan);
+  vista.encima.set(0, -.55 + Math.sin(62 * Math.PI / 180) * dEncima, Math.cos(62 * Math.PI / 180) * dEncima);
   // de noche la niebla se traga lo de lejos; de día se alcanza a ver la iglesia
   escena.fog.near = D + (esc && !esc.noche ? 3 : 1.4); escena.fog.far = D + (esc && !esc.noche ? 13 : 5.5);
   const arriba = document.querySelector('.hud-juego__arriba').getBoundingClientRect().bottom;
   const mesa = [...document.querySelectorAll('.mesa')].find(m => !m.hidden);
   // solo estorba si tapa el medio: en pantalla ancha la mesa va a un lado
   const caja = mesa && mesa.getBoundingClientRect();
-  const abajo = caja && caja.left < w / 2 && caja.right > w / 2 ? h - caja.top : 0;
-  const corre = Math.max(0, (abajo - arriba) / 2);
   camara.aspect = aspecto;
-  camara.setViewOffset(w, h + corre * 2, 0, corre * 2, w, h);
+  if (aspecto > 1.3 && caja && caja.right < w * .62 && caja.top < h * .5) {
+    // acostado, con la mesa al costado: la tina se corre al espacio libre de la derecha
+    const lado = caja.right / 2;
+    camara.setViewOffset(w + lado * 2, h, 0, 0, w, h);
+  } else {
+    const abajo = caja && caja.left < w / 2 && caja.right > w / 2 ? h - caja.top : 0;
+    const corre = Math.max(0, (abajo - arriba) / 2);
+    camara.setViewOffset(w, h + corre * 2, 0, corre * 2, w, h);
+  }
   camara.updateProjectionMatrix();
   apuntar();
 }
@@ -579,6 +717,7 @@ function apuntar() {
 
 /* ─── el bucle ─────────────────────────────────────────────── */
 const DT = 1 / 240;
+const escenaEl = document.querySelector('.escena');
 let tina = Tina.crear(), resto = 0, antes = 0, lenta = 1, ultimoUy = 0, ultimoGrito = 0;
 function cuadro(ahora) {
   const real = Math.min(1, (ahora - antes) / 1000 || 0), dt = Math.min(.05, real); antes = ahora;
@@ -592,16 +731,18 @@ function cuadro(ahora) {
     while (resto >= DT && n++ < 60) {
       resto -= DT;
       for (const e of Tina.paso(tina, DT)) {
-        if (e.tipo === 'cae') { sonar('cae'); contarCaida(e); if (e.ultima) decidir(); }
+        if (e.tipo === 'cae') { sonar('cae'); vibrar(15); contarCaida(e); if (e.ultima) decidir(); }
         else sonar(e.tipo, e.fuerza / 2.2);
       }
     }
     if (est.fase === 'rueda') { comentar(ahora); if (Tina.quietas(tina) && !Tina.todasDentro(tina)) nulo(); }
+    escenaEl.classList.toggle('tension', est.fase === 'rueda' && tina.primera && restantes() === 1);
     // la cámara se acerca cuando la mayoría ya llegó al fondo
     const abajo = tina.bolas.filter(b => !b.hueco && Math.hypot(b.x, b.z) < .4).length;
     if (est.fase === 'rueda' && (abajo >= 3 || tina.t > 3)) vista.objetivo = 1;
   }
-  vista.k += (vista.objetivo - vista.k) * Math.min(1, dt * 1.6);
+  // al bajar a contar va más rápido: la gente quiere ver ya cuántas quedaron
+  vista.k += (vista.objetivo - vista.k) * Math.min(1, dt * (vista.objetivo === 2 ? 3.2 : 1.6));
   apuntar();
   colocar(tina);
   moverMonedas(dt);
@@ -645,7 +786,7 @@ function contarCaida(e) {
     const paraPares = r.redondo % 2 ? 'el redondo' : 'la cajita';
     $('rueda-t').textContent = `¡Falta una y esa decide! Si cae en ${paraPares}, pares; si no, nones.`;
     grita(BANCA, '¡La última decide!', 1800);
-    sonar('uy', .6);
+    sonar('uy', .6); vibrar([25, 50, 25]);
   } else if (falta > 0 && Math.random() < .55) {
     grita(azar(VECINOS), azar([`¡${e.dentro}!`, e.hueco === 'redondo' ? '¡Otra al redondo!' : '¡Otra a la cajita!', '¡Una más!']), 900);
   }
@@ -724,7 +865,7 @@ function nuevaRonda() {
   for (const b of [brilloRedondo, brilloCajita]) b.userData.encendido = false;
   for (const q of [...VECINOS, TU]) vaciar(q);
   if (pila(BANCA).userData.n < 6) ponerEn(BANCA, 10 - pila(BANCA).userData.n);
-  est.quieres = null; est.vamos = null; est.apostado = 0; est.juegas = false;
+  est.quieres = null; est.vamos = null; est.apostado = 0; est.juegas = false; gritos = 0;
   for (const v of VECINOS) { v.quiere = Math.random() < .5 ? 'pares' : 'nones'; v.juega = false; v.apuesta = 0; }
   vista.objetivo = 0; lenta = 1;
   enLaMano(ENFRENTE);
@@ -759,10 +900,13 @@ function gritadera(dt, ahora) {
   }
   if (reloj <= 0) decideBanca();
 }
+let gritos = 0;
 function gritar(lado) {
   if (est.fase !== 'gente') return;
-  est.quieres = lado;
-  grita(TU, `¡${lado === 'pares' ? 'Pares' : 'Nones'}!`, 800);
+  if (est.quieres !== lado) gritos = 0;
+  est.quieres = lado; gritos++;
+  grita(TU, `¡${lado === 'pares' ? 'Pares' : 'Nones'}!${gritos > 1 ? ' ×' + gritos : ''}`, 800);
+  vibrar(8);
   // convence a alguno de los del otro lado, si es blando
   const otros = VECINOS.filter(v => v.quiere !== lado);
   const v = otros.sort((a, b) => a.firme - b.firme)[Math.floor(Math.random() * Math.min(2, otros.length))];
@@ -794,7 +938,8 @@ function decideBanca() {
     grita(v, quiere ? azar(['¡Juego!', '¡Ahí va!', '¡Va!']) : 'Ya, por no dejar', 1200);
   }, 900 + i * 450));
   const contra = est.quieres && est.quieres !== est.vamos;
-  $('apuesta-dice').textContent = `«Vamos por ${est.vamos}. ¿Va a jugar o no?»`;
+  $('apuesta-vamos').textContent = `Vamos por ${est.vamos}`;
+  $('apuesta-dice').textContent = '«¿Va a jugar o no?»';
   $('apuesta-nota').textContent = contra
     ? `Tú querías ${est.quieres}, pero la gente pidió ${est.vamos}. ¿Entras igual?`
     : est.quieres ? `Salió lo que pediste. Si quedan ${QUEDAN[est.vamos]}, la banca paga el doble.`
@@ -811,17 +956,24 @@ const QUEDAN = { pares: 'pares en cada agujero (4 y 4, 2 y 6)', nones: 'impares 
 function pintarMano() {
   const fichas = [...document.querySelectorAll('.ficha')];
   const puestas = est.apostado / FICHA;
-  fichas.forEach((f, i) => { f.hidden = i < puestas; f.disabled = est.apostado + FICHA > est.saldo; });
+  // las que ya están en la mesa dejan su hueco: nada se corre bajo el dedo
+  fichas.forEach((f, i) => { f.classList.toggle('puesta', i < puestas); f.disabled = i < puestas || est.apostado + FICHA > est.saldo; });
   $('en-mesa').textContent = plata(est.apostado);
   $('b-juego').disabled = !est.apostado;
-  $('b-recoger').hidden = !est.apostado;
+  const r = $('b-recoger');
+  r.setAttribute('aria-hidden', String(!est.apostado)); r.tabIndex = est.apostado ? 0 : -1;
 }
 function ponerMoneda() {
   if (est.fase !== 'apuesta' || est.apostado >= FICHA * 4 || est.apostado + FICHA > est.saldo) return;
-  est.apostado += FICHA; ponerEn(TU, 1); sonar('moneda');
+  est.apostado += FICHA; ponerEn(TU, 1); sonar('moneda'); vibrar(12);
+  ultimaFicha = performance.now();
   pintarMano();
 }
 function recoger() { est.apostado = 0; vaciar(TU); pintarMano(); }
+/* Un toque que acaba de poner una moneda no puede ser también «Juego» o
+   «Paso»: en el teléfono el clic llega después y podría caer en otro botón. */
+let ultimaFicha = 0;
+const muyPronto = () => performance.now() - ultimaFicha < 450;
 
 /* Arrastrar una moneda de la mano a la mesa (o tocarla, que es lo mismo). */
 let arrastre = null;
@@ -854,13 +1006,14 @@ document.querySelectorAll('.ficha').forEach(f => {
 });
 
 function juego() {
-  if (est.fase !== 'apuesta' || !est.apostado) return;
+  if (est.fase !== 'apuesta' || !est.apostado || muyPronto()) return;
   est.juegas = true; est.saldo -= est.apostado; guardar(); pintar();
+  delta(-est.apostado);
   grita(TU, '¡Juego!', 1000);
   arrancaTiro();
 }
 function paso() {
-  if (est.fase !== 'apuesta') return;
+  if (est.fase !== 'apuesta' || muyPronto()) return;
   recoger(); est.juegas = false; pintar();
   grita(TU, 'Paso', 1000);
   arrancaTiro();
@@ -880,9 +1033,11 @@ function arrancaTiro() {
     return;
   }
   if (est.juegas && est.apostado >= FICHA * 4) {
+    const g = globos.get(TU); if (g) g.classList.remove('ve');
     grita(BANCA, 'Usted que va duro, lance usted', 2200);
     enLaMano(DELANTE);
     est.fase = 'lanzar'; mesa('m-lanzar');
+    $('pista').hidden = false;
     $('b-lanzar').focus({ preventScroll: true });
     return;
   }
@@ -934,6 +1089,7 @@ function tiroDeLaBanca(estilo) {
 }
 
 function lanzar(origen, angulo, fuerza, semilla) {
+  $('pista').hidden = true;
   tina = Tina.crear();
   Tina.tirar(tina, origen, angulo, fuerza, semilla == null ? Math.random : semillado(semilla));
   ponerCanicas(tina);
@@ -954,7 +1110,7 @@ function decidir() {
   const salio = r.par ? 'pares' : 'nones', gana = salio === est.vamos;
   brilloRedondo.userData.encendido = brilloCajita.userData.encendido = true;
   lenta = 1;
-  setTimeout(() => { if (est.fase === 'fin') vista.objetivo = 2; }, 500);
+  setTimeout(() => { if (est.fase === 'fin') vista.objetivo = 2; }, 300);
   const donde = `Quedaron ${r.redondo} en el redondo y ${r.cajita} en la cajita.`;
   $('fin-suma').innerHTML = `${r.par ? 'Pares' : 'Nones'} <small class="micro">${r.redondo} y ${r.cajita}</small>`;
   const jugadores = VECINOS.filter(v => v.juega);
@@ -973,6 +1129,11 @@ function decidir() {
       if (Math.random() < .6) grita(v, azar(['¡Ayayay!', '¡No puede ser!', '¡Por un pelito!']), 1500); v.persona.lamenta(); });
     if (est.juegas) { const n = pila(TU).userData.n; vaciar(TU); volar(TU, BANCA, n, .3); }
   }
+  // lo que se gritaba mientras rodaban se calla: ahora hablan el resultado
+  for (const g of globos.values()) g.classList.remove('ve');
+  sellar(r.par ? '¡Pares!' : '¡Nones!', `${r.redondo} y ${r.cajita}`, !est.juegas ? 'pasa' : gana ? 'gana' : 'pierde');
+  if (est.juegas) { vibrar(gana ? [40, 60, 40, 60, 140] : 160); if (gana) delta(est.apostado * 2); }
+  escenaEl.classList.remove('tension');
   let texto;
   if (!est.juegas) texto = `${donde} ${gana ? 'Ganó la gente y tú pasaste.' : 'Ganó la banca; hiciste bien en pasar.'}`;
   else if (gana) texto = `${donde} La banca paga el doble: te llevas ${plata(est.apostado * 2)}.`;
@@ -984,6 +1145,22 @@ function decidir() {
   guardar(); pintar();
   est.fase = 'fin';
   setTimeout(() => { if (est.fase === 'fin') { mesa('m-fin'); $('b-otra').focus({ preventScroll: true }); } }, 900);
+}
+
+/* El sello grande del final, y lo que entra o sale de tu plata. */
+function sellar(texto, sub, tono) {
+  const el = $('sello');
+  el.className = 'sello sello--' + tono;
+  el.innerHTML = '';
+  el.append(texto); const s = document.createElement('small'); s.textContent = sub; el.append(s);
+  void el.offsetWidth; el.classList.add('ve');
+}
+function delta(centavos) {
+  const d = document.createElement('span');
+  d.className = 'delta ' + (centavos > 0 ? 'delta--mas' : 'delta--menos');
+  d.textContent = (centavos > 0 ? '+' : '−') + plata(Math.abs(centavos));
+  document.querySelector('.hud-juego__cifras').append(d);
+  setTimeout(() => d.remove(), 1700);
 }
 
 /* Alguna se quedó afuera: el tiro no vale y cada uno recoge lo suyo. */
@@ -1055,6 +1232,7 @@ guia.visible = false; escena.add(guia);
 let gesto = null;
 lienzo.addEventListener('pointerdown', e => {
   if (est.fase !== 'lanzar') return;
+  $('pista').hidden = true;
   const p = alPiso(e); if (!p) return;
   const origen = Math.atan2(p.z, p.x);
   enLaMano(origen);
