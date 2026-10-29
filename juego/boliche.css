@@ -268,3 +268,11 @@
   [data-marca="boliche"] .btn--rojo::after{animation:none}
   [data-marca="boliche"] .sello.ve,[data-marca="boliche"] .sello.ve > *{animation:none;opacity:1;transform:translateY(-50%);filter:none;letter-spacing:.02em}
 }
+
+/* la plata de la banca, arriba: legible sobre cualquier fondo */
+[data-marca="boliche"] .banca-plata{text-shadow:0 1px 4px rgba(0,0,0,.85)}
+[data-marca="boliche"] .banca-plata b{color:var(--bo-papel);font-family:var(--mal-display);font-weight:900}
+[data-marca="boliche"] .banca-plata small{color:var(--ref-t1);font-family:var(--mal-display);font-weight:800;font-size:.6rem;letter-spacing:.16em}
+[data-marca="boliche"] .apuesta__todo{background:linear-gradient(180deg, #FF7A66, var(--bo-achiote));color:#fff;border-color:rgba(255,200,190,.5);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.4), 0 0 18px rgba(240,81,63,.35)}
+[data-marca="boliche"] .apuesta__todo[aria-pressed=true]{background:var(--bo-papel);color:var(--bo-achiote)}

@@ -25,8 +25,8 @@ export class Persona {
     const oscuro = new THREE.MeshBasicMaterial({ color: 0x140e0c });
     const blanco = mat(0xf5f1e8, .5);
 
-    const capsula = (r, largo, m) => new THREE.Mesh(new THREE.CapsuleGeometry(r * s, largo * s, 4, 10), m);
-    const esfera = (r, m, seg = 14) => new THREE.Mesh(new THREE.SphereGeometry(r * s, seg, Math.round(seg * .75)), m);
+    const capsula = (r, largo, m) => new THREE.Mesh(new THREE.CapsuleGeometry(r * s, largo * s, 6, 14), m);
+    const esfera = (r, m, seg = 18) => new THREE.Mesh(new THREE.SphereGeometry(r * s, seg, Math.round(seg * .75)), m);
     const cil = (r1, r2, h, m, seg = 16) => new THREE.Mesh(new THREE.CylinderGeometry(r1 * s, r2 * s, h * s, seg), m);
     const grupo = (x = 0, y = 0, z = 0) => { const g = new THREE.Group(); g.position.set(x * s, y * s, z * s); return g; };
 
@@ -44,8 +44,10 @@ export class Persona {
       const m = capsula(.045, .17, pantalon); m.position.y = -.11 * s; muslo.add(m);
       const rodilla = grupo(0, -.22, 0);
       const c = capsula(.038, .17, pantalon); c.position.y = -.1 * s; rodilla.add(c);
-      const pie = new THREE.Mesh(new THREE.BoxGeometry(.075 * s, .05 * s, .14 * s), zapato);
-      pie.position.set(0, -.21 * s, .035 * s); rodilla.add(pie);
+      // el zapato, redondeado: una cápsula acostada
+      const pie = capsula(.034, .08, zapato);
+      pie.rotation.x = Math.PI / 2; pie.scale.set(1.1, 1, .8);
+      pie.position.set(0, -.215 * s, .035 * s); rodilla.add(pie);
       muslo.add(rodilla); cadera.add(muslo);
       this.piernas.push({ muslo, rodilla, pie });
     }
@@ -80,27 +82,37 @@ export class Persona {
     const cuello = cil(.04, .045, .07, piel); cuello.position.y = .43 * s; torso.add(cuello);
     const cabeza = this.cabeza = grupo(0, .52, 0);
     torso.add(cabeza);
-    const craneo = esfera(.095, piel, 20); craneo.scale.set(1, 1.08, 1); cabeza.add(craneo);
-    const nariz = esfera(.022, piel, 8); nariz.position.set(0, -.008 * s, .093 * s); nariz.scale.set(.9, 1, 1.1); cabeza.add(nariz);
+    // la cabeza, un poco grande y con la quijada más ancha: se lee mejor de lejos
+    const craneo = esfera(.1, piel, 32); craneo.scale.set(1, 1.06, .98); cabeza.add(craneo);
+    const quijada = esfera(.085, piel, 24); quijada.position.set(0, -.035 * s, .012 * s); quijada.scale.set(1.08, .8, 1); cabeza.add(quijada);
+    const nariz = esfera(.02, piel, 12); nariz.position.set(0, -.01 * s, .1 * s); nariz.scale.set(.9, 1, 1.15); cabeza.add(nariz);
+    const iris = new THREE.MeshStandardMaterial({ color: 0x3a2214, roughness: .3 });
+    const brillo = new THREE.MeshBasicMaterial({ color: 0xffffff });
+    const rubor = new THREE.MeshStandardMaterial({ color: 0xd9786a, roughness: .9, transparent: true, opacity: .45 });
     for (const lado of [-1, 1]) {
-      const ojo = esfera(.017, blanco, 10); ojo.position.set(lado * .035 * s, .018 * s, .083 * s); ojo.scale.z = .6;
-      const nina = esfera(.01, oscuro, 8); nina.position.set(lado * .035 * s, .018 * s, .093 * s);
-      const oreja = esfera(.022, piel, 8); oreja.position.set(lado * .094 * s, 0, 0); oreja.scale.set(.5, 1, .8);
-      cabeza.add(ojo, nina, oreja);
+      // el ojo: blanco, iris, niña y el puntito de luz que lo hace mirar
+      const ojo = esfera(.021, blanco, 16); ojo.position.set(lado * .036 * s, .018 * s, .084 * s); ojo.scale.set(1, 1.1, .55);
+      const ir = esfera(.0125, iris, 12); ir.position.set(lado * .036 * s, .017 * s, .094 * s); ir.scale.z = .5;
+      const nina = esfera(.007, oscuro, 10); nina.position.set(lado * .036 * s, .017 * s, .0985 * s);
+      const luz = esfera(.0032, brillo, 6); luz.position.set(lado * .036 * s + .004 * s, .022 * s, .1 * s);
+      const cachete = esfera(.018, rubor, 12); cachete.position.set(lado * .058 * s, -.018 * s, .078 * s); cachete.scale.set(1, .7, .4);
+      const oreja = esfera(.024, piel, 12); oreja.position.set(lado * .099 * s, 0, -.005 * s); oreja.scale.set(.45, 1, .75);
+      cabeza.add(ojo, ir, nina, luz, cachete, oreja);
     }
     // las cejas se levantan del susto y se fruncen de la rabia
     this.cejas = [-1, 1].map(lado => {
-      const c = new THREE.Mesh(new THREE.BoxGeometry(.035 * s, .008 * s, .008 * s), pelo);
-      c.position.set(lado * .035 * s, .045 * s, .088 * s);
+      const c = new THREE.Mesh(new THREE.CapsuleGeometry(.0055 * s, .03 * s, 4, 8), pelo);
+      c.rotation.z = Math.PI / 2;
+      c.position.set(lado * .037 * s, .05 * s, .094 * s);
       c.userData.lado = lado;
       cabeza.add(c); return c;
     });
     // tres bocas: sonriendo, abierta (grita) y triste
     const sonrisa = new THREE.Mesh(new THREE.TorusGeometry(.026 * s, .006 * s, 6, 12, Math.PI), oscuro);
-    sonrisa.rotation.z = Math.PI; sonrisa.position.set(0, -.035 * s, .087 * s);
-    const abierta = esfera(.022, oscuro, 10); abierta.scale.set(1, 1.15, .5); abierta.position.set(0, -.045 * s, .084 * s);
+    sonrisa.rotation.z = Math.PI; sonrisa.position.set(0, -.038 * s, .094 * s);
+    const abierta = esfera(.022, oscuro, 10); abierta.scale.set(1, 1.15, .5); abierta.position.set(0, -.046 * s, .09 * s);
     const triste = new THREE.Mesh(new THREE.TorusGeometry(.022 * s, .006 * s, 6, 12, Math.PI), oscuro);
-    triste.position.set(0, -.058 * s, .085 * s);
+    triste.position.set(0, -.06 * s, .092 * s);
     cabeza.add(sonrisa, abierta, triste);
     this.bocas = { sonrisa, abierta, triste };
     this.boca('sonrisa');
@@ -224,7 +236,7 @@ export class Persona {
     const sube = (this.tension > .6 || g === 'grita' || g === 'celebra') ? .012 : 0;
     for (const c of this.cejas) {
       c.position.y = this._ir('ceja', .045 * this.s + sube * this.s, dt, 10);
-      c.rotation.z = g === 'lamenta' ? c.userData.lado * .35 : 0;
+      c.rotation.z = Math.PI / 2 + (g === 'lamenta' ? c.userData.lado * .35 : 0);
     }
 
     /* Los brazos: en reposo con las manos en las rodillas; gritando, un
