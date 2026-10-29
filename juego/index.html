@@ -210,6 +210,46 @@ body{-webkit-touch-callout:none}
 @media (max-width:380px){.ronda__cara{width:40px;height:40px}.ronda{gap:4px}}
 /* acostado no hay alto para la franja y el panel: ahí se ven las figuras de la tina, al lado */
 @media (orientation:landscape) and (max-height:520px){.ronda{display:none !important}}
+/* ─── el tira y afloja ─── */
+.cuerda{display:grid;grid-template-columns:auto 1fr auto;align-items:center;gap:10px;
+  font:900 .8rem/1 var(--mal-display);letter-spacing:.02em;font-variant-numeric:tabular-nums}
+.cuerda__soga{position:relative;height:16px;border-radius:999px;background:#7E3592;overflow:visible;
+  box-shadow:inset 0 2px 4px rgba(0,0,0,.45)}
+.cuerda__pares{position:absolute;left:0;top:0;bottom:0;border-radius:999px;background:linear-gradient(90deg, #2F7FB5, #58B9F0);
+  transition:width .12s ease-out}
+.cuerda__soga::after{content:"";position:absolute;left:50%;top:-4px;bottom:-4px;width:2px;margin-left:-1px;background:rgba(255,246,230,.55)}
+.cuerda__nudo{position:absolute;top:50%;width:26px;height:26px;margin:-13px 0 0 -13px;border-radius:50%;z-index:1;
+  background:radial-gradient(circle at 35% 30%, #FFE7A8, #F7B943 55%, #C98418);border:2px solid #120B08;
+  box-shadow:0 0 14px rgba(247,185,67,.7);transition:left .12s ease-out}
+.cuerda.empuja .cuerda__nudo{animation:nudo .18s ease-out}
+@keyframes nudo{50%{transform:scale(1.3)}}
+/* el combo: una etiqueta que flota sobre el borde del panel */
+.combo{position:absolute;right:14px;top:-15px;margin:0;padding:6px 12px;border-radius:999px;white-space:nowrap;
+  font:900 .82rem/1 var(--mal-display);letter-spacing:.04em;color:#120B08;
+  background:linear-gradient(180deg, #FFE7A8, #F7B943);box-shadow:0 0 0 2px #120B08, 0 0 18px rgba(247,185,67,.7)}
+.combo:empty{display:none}
+.combo.sube{animation:combo .25s ease-out}
+@keyframes combo{0%{transform:scale(1.6)}100%{transform:scale(1)}}
+.jalar{font-size:1.15rem !important;min-height:72px !important;touch-action:manipulation}
+.jalar.golpe{animation:golpe .14s ease-out}
+@keyframes golpe{0%{transform:scale(.9)}60%{transform:scale(1.06)}100%{transform:scale(1)}}
+/* los números que salen al tocar */
+.chispas{position:absolute;inset:0;pointer-events:none;z-index:40;overflow:hidden}
+.chispa{position:absolute;font:900 1.4rem/1 var(--mal-display);color:#fff;transform:translate(-50%, -50%);
+  text-shadow:0 2px 0 rgba(0,0,0,.5), 0 0 12px currentColor;animation:chispa .7s ease-out forwards}
+.chispa--pares{color:#A6DDFF}.chispa--nones{color:#E3B4F2}
+@keyframes chispa{0%{opacity:1;transform:translate(-50%, -50%) scale(.6)}25%{transform:translate(-50%, -90%) scale(1.25)}
+  100%{opacity:0;transform:translate(calc(-50% + var(--dx, 0px)), -260%) scale(.9)}}
+/* la cuenta regresiva */
+.cuenta{position:absolute;left:50%;top:38%;z-index:26;pointer-events:none;transform:translate(-50%, -50%);
+  font:900 clamp(5rem, 28vw, 9rem)/1 var(--mal-display);color:#fff;opacity:0;
+  text-shadow:0 6px 0 rgba(0,0,0,.4), 0 0 40px rgba(247,185,67,.8)}
+.cuenta.ve{animation:cuenta .9s ease-out both}
+@keyframes cuenta{0%{opacity:0;transform:translate(-50%, -50%) scale(2.2)}20%{opacity:1;transform:translate(-50%, -50%) scale(1)}
+  80%{opacity:1}100%{opacity:0;transform:translate(-50%, -50%) scale(.85)}}
+.escena.tiembla{animation:tiembla .12s linear infinite}
+@keyframes tiembla{25%{transform:translate(2px, -1px)}50%{transform:translate(-2px, 1px)}75%{transform:translate(1px, 2px)}}
+@media (prefers-reduced-motion:reduce){.cuenta.ve,.chispa,.jalar.golpe,.escena.tiembla,.combo.sube,.cuerda.empuja .cuerda__nudo{animation:none}.cuenta.ve{opacity:1}}
 .sin-3d{position:absolute;inset:auto 0 50% 0;text-align:center;padding:var(--mal-e5)}
 </style>
 <!-- el tema propio del juego: un fork del de juegos, ver boliche.css -->
@@ -254,6 +294,8 @@ body{-webkit-touch-callout:none}
   <canvas id="tina" aria-label="La tina del boliche: una hondonada con dos agujeros grandes juntos en el fondo —uno redondo y una cajita cuadrada— y un tope recto un poco más arriba, con la gente alrededor" role="img"></canvas>
   <div class="globos" id="globos" aria-hidden="true"></div>
   <div class="sello" id="sello" aria-hidden="true"></div>
+  <div class="cuenta" id="cuenta" aria-hidden="true"></div>
+  <div class="chispas" id="chispas" aria-hidden="true"></div>
   <div class="pista" id="pista" hidden aria-hidden="true"><i></i><b>Desliza de costado</b></div>
 
   <div class="hud-juego">
@@ -276,18 +318,20 @@ body{-webkit-touch-callout:none}
       <ol class="ronda" id="ronda" hidden aria-label="La ronda"></ol>
       <!-- 1 · La gritadera: la gente pide y tú convences -->
       <section class="vidrio pila mesa" id="m-gente" hidden aria-label="Pares o nones">
-        <p class="kicker">¿Pares o nones?</p>
-        <div class="conteo" aria-live="polite">
-          <span id="n-pares">Pares 0</span>
-          <div class="medidor medidor--continuo" aria-hidden="true"><i id="barra-gente" style="width:50%"></i></div>
-          <span id="n-nones">0 Nones</span>
+        <p class="kicker">¡Jala la cuerda!</p>
+        <p class="combo" id="combo" aria-live="polite"></p>
+        <!-- El tira y afloja: el nudo se va hacia donde jala más la gente -->
+        <div class="cuerda" aria-hidden="true">
+          <span class="cuerda__lado cuerda__lado--pares" id="n-pares">Pares 0</span>
+          <div class="cuerda__soga"><i class="cuerda__pares" id="barra-gente" style="width:50%"></i><b class="cuerda__nudo" id="nudo" style="left:50%"></b></div>
+          <span class="cuerda__lado cuerda__lado--nones" id="n-nones">0 Nones</span>
         </div>
         <div class="opciones" id="gritos">
-          <button class="btn btn--rojo boton-juego" type="button" data-grita="pares">¡Pares!</button>
-          <button class="btn boton-juego" type="button" data-grita="nones">¡Nones!</button>
+          <button class="btn boton-juego jalar" type="button" data-grita="pares">¡Pares!</button>
+          <button class="btn boton-juego jalar" type="button" data-grita="nones">¡Nones!</button>
         </div>
         <div class="medidor medidor--continuo medidor--fino" aria-hidden="true"><i id="reloj-gente" style="width:100%"></i></div>
-        <p class="caption" id="gente-nota">Grita para convencer: la banca va por lo que pida la mayoría.</p>
+        <p class="caption" id="gente-nota">Toca rápido para jalar: la banca va para donde quede el nudo.</p>
       </section>
 
       <!-- 2 · ¿Va a jugar o no? -->
@@ -360,8 +404,8 @@ body{-webkit-touch-callout:none}
         <div class="expls" id="expls" aria-live="polite">
           <section class="expl" data-paso="0" aria-label="Paso 1 de 5">
             <svg class="expl__dibujo" viewBox="0 0 220 120" aria-hidden="true"><circle cx="40" cy="62" r="13" fill="#B97D55" stroke="#24150F" stroke-width="2"/><circle cx="36" cy="60" r="1.6" fill="#24150F"/><circle cx="44" cy="60" r="1.6" fill="#24150F"/><ellipse cx="40" cy="67" rx="3.5" ry="3" fill="#24150F"/><path d="M23 92 Q40 70 57 92Z" fill="#9B1D2A" stroke="#24150F" stroke-width="2"/><circle cx="110" cy="52" r="13" fill="#B97D55" stroke="#24150F" stroke-width="2"/><circle cx="106" cy="50" r="1.6" fill="#24150F"/><circle cx="114" cy="50" r="1.6" fill="#24150F"/><ellipse cx="110" cy="57" rx="3.5" ry="3" fill="#24150F"/><path d="M93 82 Q110 60 127 82Z" fill="#5A1A1A" stroke="#24150F" stroke-width="2"/><ellipse cx="110" cy="42" rx="17" ry="3.5" fill="#24150F"/><rect x="102" y="31" width="16" height="11" rx="2" fill="#24150F"/><circle cx="180" cy="62" r="13" fill="#B97D55" stroke="#24150F" stroke-width="2"/><circle cx="176" cy="60" r="1.6" fill="#24150F"/><circle cx="184" cy="60" r="1.6" fill="#24150F"/><ellipse cx="180" cy="67" rx="3.5" ry="3" fill="#24150F"/><path d="M163 92 Q180 70 197 92Z" fill="#2F7D4A" stroke="#24150F" stroke-width="2"/><rect x="17.0" y="19" width="46" height="20" rx="10" fill="#5FB4E6" stroke="#24150F" stroke-width="2"/><path d="M36 38 L40 45 L44 38" fill="#5FB4E6" stroke="#24150F" stroke-width="2"/><text x="40" y="33.5" text-anchor="middle" font-family="Montserrat,Arial Black,sans-serif" font-weight="900" font-size="9" fill="#24150F">¡PARES!</text><rect x="157.0" y="19" width="46" height="20" rx="10" fill="#7E3592" stroke="#24150F" stroke-width="2"/><path d="M176 38 L180 45 L184 38" fill="#7E3592" stroke="#24150F" stroke-width="2"/><text x="180" y="33.5" text-anchor="middle" font-family="Montserrat,Arial Black,sans-serif" font-weight="900" font-size="9" fill="#F6EBD3">¡NONES!</text><rect x="68.0" y="3" width="84" height="20" rx="10" fill="#F2B33D" stroke="#24150F" stroke-width="2"/><path d="M106 22 L110 29 L114 22" fill="#F2B33D" stroke="#24150F" stroke-width="2"/><text x="110" y="17.5" text-anchor="middle" font-family="Montserrat,Arial Black,sans-serif" font-weight="900" font-size="9" fill="#24150F">¿PARES O NONES?</text><rect x="20" y="104" width="180" height="9" rx="4.5" fill="#7E3592" stroke="#24150F" stroke-width="2"/><rect x="20" y="104" width="108" height="9" rx="4.5" fill="#5FB4E6" stroke="#24150F" stroke-width="2"/></svg>
-            <h2 class="expl__t"><span class="expl__n">1</span> La gente grita</h2>
-            <p class="expl__x">Cada vecino grita <b>pares</b> o <b>nones</b>. Grita tú también para convencerlos: la banca va por lo que pida la mayoría.</p>
+            <h2 class="expl__t"><span class="expl__n">1</span> Jala la cuerda</h2>
+            <p class="expl__x">La gente jala una cuerda: unos a <b>pares</b>, otros a <b>nones</b>. <b>Toca rápido</b> para jalar a tu lado: el combo sube y convences a los demás. La banca va para donde quede el nudo.</p>
           </section>
           <section class="expl" data-paso="1" hidden aria-label="Paso 2 de 5">
             <svg class="expl__dibujo" viewBox="0 0 220 120" aria-hidden="true"><circle cx="110" cy="40" r="13" fill="#B97D55" stroke="#24150F" stroke-width="2"/><circle cx="106" cy="38" r="1.6" fill="#24150F"/><circle cx="114" cy="38" r="1.6" fill="#24150F"/><ellipse cx="110" cy="45" rx="3.5" ry="3" fill="#24150F"/><path d="M93 70 Q110 48 127 70Z" fill="#5A1A1A" stroke="#24150F" stroke-width="2"/><ellipse cx="110" cy="30" rx="17" ry="3.5" fill="#24150F"/><rect x="102" y="19" width="16" height="11" rx="2" fill="#24150F"/><rect x="64.0" y="-1" width="92" height="20" rx="10" fill="#F2B33D" stroke="#24150F" stroke-width="2"/><path d="M106 18 L110 25 L114 18" fill="#F2B33D" stroke="#24150F" stroke-width="2"/><text x="110" y="13.5" text-anchor="middle" font-family="Montserrat,Arial Black,sans-serif" font-weight="900" font-size="9" fill="#24150F">¿VA A JUGAR O NO?</text><ellipse cx="60" cy="98" rx="16" ry="6" fill="#D9D5CB" stroke="#24150F" stroke-width="2"/><ellipse cx="60" cy="96" rx="16" ry="6" fill="#F4F1EA" stroke="#24150F" stroke-width="2"/><ellipse cx="60" cy="91" rx="16" ry="6" fill="#D9D5CB" stroke="#24150F" stroke-width="2"/><ellipse cx="60" cy="89" rx="16" ry="6" fill="#F4F1EA" stroke="#24150F" stroke-width="2"/><ellipse cx="60" cy="84" rx="16" ry="6" fill="#D9D5CB" stroke="#24150F" stroke-width="2"/><ellipse cx="60" cy="82" rx="16" ry="6" fill="#F4F1EA" stroke="#24150F" stroke-width="2"/><text x="60" y="117" text-anchor="middle" font-family="Montserrat,sans-serif" font-weight="900" font-size="9" fill="#F2B33D">$0,75</text><rect x="112" y="78" width="44" height="22" rx="8" fill="#F2B33D" stroke="#24150F" stroke-width="2"/><text x="134" y="93" text-anchor="middle" font-family="Montserrat,sans-serif" font-weight="900" font-size="9" fill="#24150F">JUEGO</text><rect x="162" y="78" width="44" height="22" rx="8" fill="#F6EBD3" stroke="#24150F" stroke-width="2"/><text x="184" y="93" text-anchor="middle" font-family="Montserrat,sans-serif" font-weight="900" font-size="9" fill="#24150F">PASO</text></svg>
@@ -501,6 +545,8 @@ function sonar(tipo, fuerza) {
     else if (tipo === 'pared') golpe('triangle', 170, 0, .14, .08);                  // cemento
     else if (tipo === 'cae') golpe('sine', 640, 150, .26, .22);
     else if (tipo === 'moneda') golpe('square', 1900, 2600, .05, .06);
+    else if (tipo === 'jalon') golpe('triangle', 300 + (fuerza || 1) * 110, 520 + (fuerza || 1) * 150, .09 / vol, .07);
+    else if (tipo === 'tic') golpe('square', 880, 0, .06, .09);
   } catch (e) {}
 }
 
@@ -1080,22 +1126,25 @@ function enLaMano(origen) {
   ponerCanicas(tina);
 }
 
-/* 1 · LA GRITADERA. Cada vecino empieza pidiendo lo suyo y en seis
-   segundos de gritos se puede dar la vuelta: tú gritas y convences a
-   los blandos; los otros también se convencen entre ellos. */
-const GRITADERA = 6.5;
-let finGente = 0, proximoVecino = 0;
+/* 1 · LA GRITADERA, como tira y afloja. Hay un nudo en una cuerda, en
+   `est.jalon` de -1 (todo nones) a 1 (todo pares). Cada vecino jala para
+   lo suyo; tú jalas tocando rápido —el combo sube y cada toque jala
+   más—. Si el nudo pasa al lado contrario de un vecino más allá de lo
+   terco que es, se voltea. La banca va para donde quede el nudo. */
+const GRITADERA = 4.5;
+let finGente = 0, proximoVecino = 0, ultimaCuenta = 0;
 function nuevaRonda() {
   for (const b of [brilloRedondo, brilloCajita]) b.userData.encendido = false;
   for (const q of [...gente(), est.eresBanca ? null : TU].filter(Boolean)) vaciar(q);
   if (pila(caja()).userData.n < 6) ponerEn(caja(), 10 - pila(caja()).userData.n);
   est.quieres = null; est.vamos = null; est.apostado = 0; est.juegas = false; gritos = 0;
+  est.jalon = 0; combo = 0; ultimaCuenta = 0; $('combo').textContent = '';
   for (const v of [...VECINOS, BANCA]) { v.quiere = Math.random() < .5 ? 'pares' : 'nones'; v.juega = false; v.apuesta = 0; }
   // si la banca eres tú, no gritas: escuchas, y vas por lo que pida la mayoría
   $('gritos').hidden = est.eresBanca;
   $('gente-nota').textContent = est.eresBanca
-    ? 'Eres la banca: escucha a la gente. Vas por lo que pida la mayoría, y ellos intentan quebrarte.'
-    : 'Grita para convencer: la banca va por lo que pida la mayoría.';
+    ? 'Eres la banca: la gente jala la cuerda y tú vas para donde quede el nudo. Ellos intentan quebrarte.'
+    : 'Toca rápido para jalar: la banca va para donde quede el nudo.';
   vista.objetivo = 0; lenta = 1;
   enLaMano(ENFRENTE);
   finGente = performance.now() + GRITADERA * 1000; proximoVecino = .3;
@@ -1110,8 +1159,13 @@ function contar() {
   const votos = [...gente().map(v => v.quiere), est.eresBanca ? null : est.quieres].filter(Boolean);
   const p = votos.filter(q => q === 'pares').length, n = votos.length - p;
   $('n-pares').textContent = `Pares ${p}`; $('n-nones').textContent = `${n} Nones`;
-  $('barra-gente').style.width = `${(p / Math.max(1, p + n)) * 100}%`;
+  pintarCuerda();
   return { p, n };
+}
+function pintarCuerda() {
+  const k = ((est.jalon || 0) + 1) / 2 * 100;
+  $('barra-gente').style.width = `${k}%`;
+  $('nudo').style.left = `${k}%`;
 }
 /* Va con el reloj de verdad, no con el del juego: en un teléfono lento
    los cuadros se alargan y seis segundos no pueden volverse un minuto. */
@@ -1119,44 +1173,80 @@ function gritadera(dt, ahora) {
   const reloj = (finGente - ahora) / 1000;
   $('reloj-gente').style.width = `${Math.max(0, reloj / GRITADERA) * 100}%`;
   $('m-gente').style.setProperty('--tiempo', Math.max(0, reloj / GRITADERA));
+  // la gente jala: cada uno hacia lo suyo, con tirones
+  const lista = gente();
+  let fuerza = 0;
+  for (const v of lista) fuerza += (v.quiere === 'pares' ? 1 : -1) * (.5 + v.firme);
+  est.jalon = Math.max(-1, Math.min(1, est.jalon + fuerza * .045 * dt + (Math.random() - .5) * .02));
+  // el que queda muy del otro lado, se voltea
+  for (const v of lista) {
+    const contra = v.quiere === 'pares' ? -est.jalon : est.jalon;
+    if (contra > .25 + v.firme * .5) {
+      v.quiere = v.quiere === 'pares' ? 'nones' : 'pares';
+      grita(v, azar([`¡Bueno, ${v.quiere}!`, `Ya, ${v.quiere}`, '¡Me convencieron!']), 1100);
+      sonar('moneda', .5); vibrar(20);
+      contar();
+    }
+  }
   proximoVecino -= dt;
   if (proximoVecino <= 0) {
-    proximoVecino = .45 + Math.random() * .6;
-    const v = azar(gente());
-    // a veces uno convence a otro
-    const otro = azar(gente().filter(o => o !== v && o.quiere !== v.quiere));
-    if (otro && Math.random() < (1 - otro.firme) * .22) {
-      otro.quiere = v.quiere;
-      grita(otro, `Bueno, ${otro.quiere}`, 1100);
-    } else grita(v, `¡${v.quiere === 'pares' ? 'Pares' : 'Nones'}!`, 900);
-    contar();
+    proximoVecino = .5 + Math.random() * .5;
+    const v = azar(lista);
+    grita(v, azar([`¡${v.quiere === 'pares' ? 'Pares' : 'Nones'}!`, '¡Jala, jala!', '¡Más fuerte!']), 800);
   }
-  if (reloj <= 0) decideBanca();
+  pintarCuerda();
+  // la cuenta regresiva, grande, en el centro; y en el último segundo tiembla
+  const n = Math.ceil(reloj);
+  if (n <= 3 && n >= 1 && n !== ultimaCuenta) { ultimaCuenta = n; mostrarCuenta(String(n)); sonar('tic', 1); vibrar(10); }
+  escenaEl.classList.toggle('tiembla', reloj < 1 && reloj > 0);
+  if (reloj <= 0) { escenaEl.classList.remove('tiembla'); mostrarCuenta('¡YA!'); decideBanca(); }
+}
+function mostrarCuenta(t) {
+  const el = $('cuenta'); el.textContent = t;
+  el.classList.remove('ve'); void el.offsetWidth; el.classList.add('ve');
 }
 let gritos = 0;
-function gritar(lado) {
+/* Cada toque jala. Tocar rápido sube el combo: cada cinco seguidos, el
+   toque jala una vez más (hasta ×4). Salen números, rebota el botón,
+   suena más agudo y vibra. */
+let combo = 0, ultimoToque = 0;
+function gritar(lado, x, y) {
   if (est.fase !== 'gente') return;
-  if (est.quieres !== lado) gritos = 0;
-  est.quieres = lado; gritos++;
-  grita(TU, `¡${lado === 'pares' ? 'Pares' : 'Nones'}!${gritos > 1 ? ' ×' + gritos : ''}`, 800);
-  vibrar(8);
-  // convence a alguno de los del otro lado, si es blando
-  const otros = VECINOS.filter(v => v.quiere !== lado);
-  const v = otros.sort((a, b) => a.firme - b.firme)[Math.floor(Math.random() * Math.min(2, otros.length))];
-  if (v && Math.random() < (1 - v.firme) * .5) {
-    v.quiere = lado;
-    setTimeout(() => grita(v, azar([`Ya, ya, ${lado}`, `Bueno, ${lado}`, `Ya me convenciste`]), 1200), 250);
-  }
+  const ahora = performance.now();
+  if (est.quieres !== lado || ahora - ultimoToque > 380) combo = 0;
+  ultimoToque = ahora;
+  est.quieres = lado; gritos++; combo++;
+  const mult = Math.min(4, 1 + Math.floor(combo / 5));
+  est.jalon = Math.max(-1, Math.min(1, est.jalon + (lado === 'pares' ? 1 : -1) * .035 * mult));
+  pintarCuerda();
+  const cu = document.querySelector('.cuerda'); cu.classList.remove('empuja'); void cu.offsetWidth; cu.classList.add('empuja');
+  chispa(`+${mult}`, lado, x, y);
+  sonar('jalon', mult); vibrar(mult > 1 ? 12 : 6);
+  const el = $('combo');
+  if (mult > 1) { const t = `COMBO ×${mult}`; if (el.textContent !== t) { el.textContent = t; el.classList.remove('sube'); void el.offsetWidth; el.classList.add('sube'); } }
+  else el.textContent = '';
+  if (gritos % 6 === 1) grita(TU, `¡${lado === 'pares' ? 'Pares' : 'Nones'}!`, 700);
   contar();
+}
+function chispa(texto, lado, x, y) {
+  const el = document.createElement('span');
+  el.className = 'chispa chispa--' + lado;
+  el.textContent = texto;
+  el.style.left = `${x ?? innerWidth / 2}px`; el.style.top = `${y ?? innerHeight * .7}px`;
+  el.style.setProperty('--dx', `${(Math.random() - .5) * 60}px`);
+  $('chispas').append(el);
+  setTimeout(() => el.remove(), 750);
 }
 
 /* 2 · LA BANCA DECIDE y pregunta: ¿va a jugar o no? Los vecinos que
    querían eso apuestan; los otros a veces entran por no quedarse
    afuera, y a veces pasan. */
 function decideBanca() {
-  const { p, n } = contar();
-  est.vamos = p > n ? 'pares' : n > p ? 'nones' : azar(['pares', 'nones']);
-  const empate = p === n;
+  contar();
+  est.vamos = est.jalon > .02 ? 'pares' : est.jalon < -.02 ? 'nones' : azar(['pares', 'nones']);
+  const empate = Math.abs(est.jalon) <= .02;
+  // los que quedaron del lado del nudo quieren eso; los demás, lo suyo
+  for (const v of gente()) if (Math.abs(est.jalon) > .6) v.quiere = est.vamos;
   est.fase = 'apuesta';
   grita(est.eresBanca ? TU : BANCA, empate ? `Empate… escojo yo: ¡${est.vamos}!` : `¡Vamos por ${est.vamos}!`, 2200);
   sonar('gente', .7);
@@ -1494,7 +1584,15 @@ function revisarPlata() {
 }
 
 /* ─── los controles ────────────────────────────────────────── */
-document.querySelectorAll('[data-grita]').forEach(b => b.addEventListener('click', () => gritar(b.dataset.grita)));
+document.querySelectorAll('[data-grita]').forEach(b => {
+  b.addEventListener('pointerdown', e => {
+    e.preventDefault();
+    // el número sale por encima del botón, donde no tapa nada
+    gritar(b.dataset.grita, e.clientX, b.getBoundingClientRect().top - 8);
+    b.classList.remove('golpe'); void b.offsetWidth; b.classList.add('golpe');
+  });
+  b.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); const r = b.getBoundingClientRect(); gritar(b.dataset.grita, r.left + r.width / 2, r.top); } });
+});
 $('b-juego').addEventListener('click', juego);
 $('b-paso').addEventListener('click', paso);
 $('b-recoger').addEventListener('click', recoger);
