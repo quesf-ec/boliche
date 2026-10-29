@@ -40,6 +40,14 @@ body{margin:0;overflow:hidden;overscroll-behavior:none;-webkit-user-select:none;
 
 /* la apuesta: una fila de monedas y el botón de ir con todo, y debajo el total */
 .apuesta{display:flex;align-items:center;gap:var(--mal-e2);min-height:56px}
+.decidir{display:grid;gap:var(--mal-e2)}
+.decidir__paso{min-height:44px}
+/* acostado no hay alto: lado a lado en el panel angosto, y sin la nota */
+@media (orientation:landscape) and (max-height:520px){
+  .decidir{grid-template-columns:2fr 1fr}
+  .decidir__paso{min-height:auto}
+  #apuesta-nota{display:none}
+}
 .apuesta__monedas{display:flex;gap:var(--mal-e2);flex:1 1 auto}
 .apuesta__todo{margin-left:auto;flex:none;min-height:44px;padding-inline:.9rem}
 .apuesta__total{display:flex;align-items:baseline;gap:var(--mal-e3);min-height:34px}
@@ -191,36 +199,28 @@ body{-webkit-touch-callout:none}
   .expl__t{justify-content:flex-start}
   .expl:last-child{grid-template-columns:1fr}
 }
-/* ─── la ronda: un retrato por jugador ─── */
-.hud-juego__abajo{flex-direction:column;align-items:flex-start;gap:10px}
-.ronda{list-style:none;margin:0;padding:0;display:flex;gap:6px;width:min(100%, 440px);justify-content:space-between}
-.ronda[hidden]{display:none}
-.ronda li{flex:1 1 0;min-width:0;display:grid;justify-items:center;gap:4px;position:relative}
-.ronda__cara{width:46px;height:46px;border-radius:50%;display:block;
-  border:2.5px solid rgba(255,255,255,.25);background:#2a1d17;box-shadow:0 4px 12px rgba(0,0,0,.45);
-  transition:border-color .25s, transform .2s, box-shadow .25s}
-.ronda li[data-quiere="pares"] .ronda__cara{border-color:#58B9F0}
-.ronda li[data-quiere="nones"] .ronda__cara{border-color:#9A4BB0}
-.ronda li.habla .ronda__cara{transform:translateY(-3px) scale(1.06);box-shadow:0 0 0 3px rgba(247,185,67,.6), 0 6px 16px rgba(0,0,0,.5)}
-.ronda li.pasa .ronda__cara{filter:grayscale(.85) brightness(.7)}
-.ronda li.gana .ronda__cara{box-shadow:0 0 0 3px #5FC25A, 0 0 18px rgba(95,194,90,.6)}
-.ronda li.pierde .ronda__cara{filter:grayscale(.6) brightness(.75)}
-.ronda__nombre{font:700 .6rem/1 var(--mal-display);letter-spacing:.02em;text-transform:uppercase;color:rgba(255,246,230,.85);
-  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%;text-shadow:0 1px 3px rgba(0,0,0,.8)}
-.ronda__ficha{position:absolute;top:-6px;right:calc(50% - 30px);min-width:22px;padding:2px 5px;border-radius:999px;
-  font:800 .58rem/1 var(--mal-display);color:#120B08;background:#F7B943;box-shadow:0 2px 6px rgba(0,0,0,.5)}
-.ronda__ficha:empty{display:none}
-.ronda__ficha[data-modo="doble"]{background:#9A4BB0;color:#fff}
-.ronda__ficha[data-modo="todo"]{background:#F0513F;color:#fff;animation:latir .7s ease-in-out infinite}
+/* ─── la etiqueta de cada uno, a sus pies en la tina ─── */
+.etiquetas{position:absolute;inset:0;pointer-events:none;z-index:14}
+.etiqueta{position:absolute;transform:translate(-50%, 0);display:grid;justify-items:center;gap:3px;
+  padding:4px 9px 5px;border-radius:12px;white-space:nowrap;
+  background:rgba(20,12,9,.78);border:2px solid rgba(255,246,230,.25);box-shadow:0 4px 12px rgba(0,0,0,.45);
+  -webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px);transition:border-color .25s, box-shadow .25s, opacity .25s}
+.etiqueta[data-quiere="pares"]{border-color:#58B9F0}
+.etiqueta[data-quiere="nones"]{border-color:#9A4BB0}
+.etiqueta.habla{box-shadow:0 0 0 3px rgba(247,185,67,.55), 0 4px 12px rgba(0,0,0,.45)}
+.etiqueta.pasa{opacity:.55}
+.etiqueta.gana{box-shadow:0 0 0 3px #5FC25A, 0 0 16px rgba(95,194,90,.6)}
+.etiqueta.pierde{opacity:.6}
+.etiqueta__nombre{font:800 .62rem/1 var(--mal-display);letter-spacing:.04em;text-transform:uppercase;color:#FFF6E6}
+.etiqueta__plata{font:900 .78rem/1 var(--mal-display);color:#F7B943;font-variant-numeric:tabular-nums}
+.etiqueta__plata.poca{color:#FF7A66}
+.etiqueta__ficha{position:absolute;top:-11px;right:-10px;padding:3px 6px;border-radius:999px;
+  font:900 .6rem/1 var(--mal-display);color:#120B08;background:#F7B943;box-shadow:0 2px 6px rgba(0,0,0,.5)}
+.etiqueta__ficha:empty{display:none}
+.etiqueta__ficha[data-modo="doble"]{background:#9A4BB0;color:#fff}
+.etiqueta__ficha[data-modo="todo"]{background:#F0513F;color:#fff;animation:latir .7s ease-in-out infinite}
 @keyframes latir{50%{transform:scale(1.15)}}
-.ronda__plata{font:800 .62rem/1 var(--mal-display);color:#F7B943;font-variant-numeric:tabular-nums;text-shadow:0 1px 3px rgba(0,0,0,.8)}
-.ronda__plata.poca{color:#FF7A66}
-img.ronda__cara{object-fit:cover;background:radial-gradient(circle at 50% 35%, #5a3a28, #24150F)}
-.ronda li.tu .ronda__nombre{color:#FF8FC2}
-.ronda li.banca .ronda__nombre{color:#F7B943}
-@media (max-width:380px){.ronda__cara{width:40px;height:40px}.ronda{gap:4px}}
-/* acostado no hay alto para la franja y el panel: ahí se ven las figuras de la tina, al lado */
-@media (orientation:landscape) and (max-height:520px){.ronda{display:none !important}}
+.etiqueta.banca .etiqueta__nombre{color:#F7B943}
 /* ─── el tira y afloja ─── */
 .cuerda{display:grid;grid-template-columns:auto 1fr auto;align-items:center;gap:10px;
   font:900 .8rem/1 var(--mal-display);letter-spacing:.02em;font-variant-numeric:tabular-nums}
@@ -303,6 +303,7 @@ img.ronda__cara{object-fit:cover;background:radial-gradient(circle at 50% 35%, #
 <body>
 <main class="escena">
   <canvas id="tina" aria-label="La tina del boliche: una hondonada con dos agujeros grandes juntos en el fondo —uno redondo y una cajita cuadrada— y un tope recto un poco más arriba, con la gente alrededor" role="img"></canvas>
+  <div class="etiquetas" id="etiquetas" aria-hidden="true"></div>
   <div class="globos" id="globos" aria-hidden="true"></div>
   <div class="sello" id="sello" aria-hidden="true"></div>
   <div class="cuenta" id="cuenta" aria-hidden="true"></div>
@@ -325,8 +326,6 @@ img.ronda__cara{object-fit:cover;background:radial-gradient(circle at 50% 35%, #
     </div>
 
     <div class="hud-juego__abajo">
-      <!-- La ronda: quién juega, qué pide y cuánto puso -->
-      <ol class="ronda" id="ronda" hidden aria-label="La ronda"></ol>
       <!-- 1 · La gritadera: la gente pide y tú convences -->
       <section class="vidrio pila mesa" id="m-gente" hidden aria-label="Pares o nones">
         <p class="kicker">¡Jala la cuerda!</p>
@@ -369,9 +368,11 @@ img.ronda__cara{object-fit:cover;background:radial-gradient(circle at 50% 35%, #
           <p class="mesa__suma" id="en-mesa">$0,00</p>
           <button class="btn btn-ghost btn--sm" id="b-recoger" type="button" aria-hidden="true" tabindex="-1">Recoger</button>
         </div>
-        <div class="opciones">
-          <button class="btn btn--rojo boton-juego" id="b-juego" type="button" disabled>Juego</button>
-          <button class="btn boton-juego" id="b-paso" type="button">Paso</button>
+        <!-- uno debajo del otro y a todo lo ancho: de las monedas a «Juego»
+             el dedo baja en línea recta, sin cruzar la pantalla -->
+        <div class="decidir">
+          <button class="btn btn--rojo boton-juego btn-block" id="b-juego" type="button" disabled>Juego</button>
+          <button class="btn btn-block decidir__paso" id="b-paso" type="button">Paso</button>
         </div>
       </section>
 
@@ -642,74 +643,52 @@ const gente = () => est.eresBanca ? [...VECINOS, BANCA] : VECINOS;
 const caja = () => est.eresBanca ? TU : BANCA;
 const TU = { nombre: 'tú', angulo: DELANTE };
 
-/* ─── los retratos de la ronda ────────────────────────────── */
-const hex = n => '#' + (n ?? 0).toString(16).padStart(6, '0');
-/* Los retratos son 3D: se arma la misma figura de cada uno (gente.js)
-   en una escena chiquita, con luz de estudio, y se toma la foto de la
-   cabeza. Se hace una vez y se guarda como imagen. */
-const fotos = new Map();
-let estudio = null;
-function retrato(a) {
-  const clave = JSON.stringify(a);
-  if (fotos.has(clave)) return fotos.get(clave);
-  if (!estudio) {
-    const c = document.createElement('canvas'); c.width = c.height = 128;
-    const r = new THREE.WebGLRenderer({ canvas: c, antialias: true, alpha: true, preserveDrawingBuffer: true });
-    r.outputColorSpace = THREE.SRGBColorSpace; r.toneMapping = THREE.ACESFilmicToneMapping; r.setClearColor(0x000000, 0);
-    const e = new THREE.Scene();
-    e.add(new THREE.HemisphereLight(0xfff1dc, 0x3a2418, 1.1));
-    const clave1 = new THREE.DirectionalLight(0xffe2b8, 2.4); clave1.position.set(.6, 1, 1.4); e.add(clave1);
-    const borde = new THREE.DirectionalLight(0xf7b943, 1.6); borde.position.set(-1.2, .6, -.8); e.add(borde);
-    estudio = { r, e, cam: new THREE.PerspectiveCamera(26, 1, .05, 10), c };
-  }
-  const { r, e, cam, c } = estudio;
-  const p = new Persona(THREE, { ...a, pose: 'silla', asiento: .42 });
-  p.boca('sonrisa');
-  e.add(p.grupo); p.grupo.updateMatrixWorld(true);
-  const h = new THREE.Vector3(); p.cabeza.getWorldPosition(h);
-  const s = a.escala || 1;
-  // de frente, un poco de lado: entran el sombrero arriba y los hombros con su ropa abajo
-  cam.position.set(h.x + .14 * s, h.y + .02 * s, h.z + .78 * s);
-  cam.lookAt(h.x, h.y - .03 * s + (a.sombrero ? .03 : 0) * s, h.z);
-  r.render(e, cam);
-  const url = c.toDataURL('image/png');
-  e.remove(p.grupo);
-  p.grupo.traverse(m => { if (m.geometry) m.geometry.dispose(); });
-  fotos.set(clave, url);
-  return url;
-}
+/* ─── la etiqueta de cada uno ─────────────────────────────── */
+/* Sobre cada figura de la tina, a sus pies: nombre, la plata que le
+   queda y lo que puso. El borde dice qué pide; brilla cuando habla. */
 const corto = n => n.replace(/^(Don|Doña|la|el) /, '');
 let rondaLista = [];
-/* Pinta la franja: el borde es lo que pide cada uno, la ficha lo que puso. */
+const etiqueta = new Map();
 function pintarRonda() {
-  const el = $('ronda');
-  const lista = est.eresBanca ? [...gente()] : [...VECINOS, TU];
+  const lista = gente();
+  const capa = $('etiquetas');
   if (rondaLista.length !== lista.length || rondaLista.some((q, i) => q !== lista[i])) {
     rondaLista = lista;
-    el.innerHTML = lista.map((q, i) => `<li data-i="${i}" class="${q === TU ? 'tu' : q === BANCA ? 'banca' : ''}">
-      <img class="ronda__cara" alt="" src="${q === TU ? RETRATO_TU : retrato(q.aspecto)}"><span class="ronda__ficha"></span><span class="ronda__nombre">${q === TU ? 'Tú' : corto(q.nombre)}</span><span class="ronda__plata"></span></li>`).join('');
+    capa.innerHTML = ''; etiqueta.clear();
+    for (const q of lista) {
+      const el = document.createElement('div');
+      el.className = 'etiqueta' + (q === BANCA ? ' banca' : '');
+      el.innerHTML = `<span class="etiqueta__nombre">${corto(q.nombre)}</span><span class="etiqueta__plata"></span><span class="etiqueta__ficha"></span>`;
+      capa.append(el); etiqueta.set(q, el);
+    }
   }
-  lista.forEach((q, i) => {
-    const li = el.children[i];
-    const quiere = q === TU ? est.quieres : q.quiere;
-    if (quiere) li.dataset.quiere = quiere; else delete li.dataset.quiere;
-    const puso = q === TU ? (est.apostado || 0) / FICHA : q.apuesta;
-    const ficha = li.querySelector('.ronda__ficha');
-    const modo = q === TU ? (est.todo ? 'todo' : '') : q.modo;
-    ficha.textContent = !puso ? '' : modo === 'todo' ? 'TODO' : modo === 'doble' ? `×2 ${plata(puso * FICHA)}` : plata(puso * FICHA);
-    ficha.dataset.modo = puso ? modo || '' : '';
-    // lo que le queda a cada uno: rojo si está por quedarse limpio
-    const queda = q === TU ? (est.eresBanca ? est.banca : est.saldo) : q.plata;
-    const pl = li.querySelector('.ronda__plata');
-    pl.textContent = plata(queda); pl.classList.toggle('poca', queda < FICHA * 4);
-    li.classList.toggle('pasa', est.fase !== 'gente' && q !== TU && !q.juega && !!est.vamos);
-  });
+  for (const q of lista) {
+    const el = etiqueta.get(q);
+    if (q.quiere) el.dataset.quiere = q.quiere; else delete el.dataset.quiere;
+    const ficha = el.querySelector('.etiqueta__ficha');
+    ficha.textContent = !q.apuesta ? '' : q.modo === 'todo' ? 'TODO' : q.modo === 'doble' ? `×2 ${plata(q.apuesta * FICHA)}` : plata(q.apuesta * FICHA);
+    ficha.dataset.modo = q.apuesta ? q.modo || '' : '';
+    const pl = el.querySelector('.etiqueta__plata');
+    pl.textContent = plata(q.plata); pl.classList.toggle('poca', q.plata < FICHA * 4);
+    el.classList.toggle('pasa', est.fase !== 'gente' && !q.juega && !!est.vamos);
+  }
 }
 function marcarRonda(clase, quienes) {
-  const el = $('ronda');
-  rondaLista.forEach((q, i) => { const li = el.children[i]; if (li) li.classList.toggle(clase, quienes.includes(q)); });
+  for (const [q, el] of etiqueta) el.classList.toggle(clase, quienes.includes(q));
 }
-const RETRATO_TU = retrato({ piel: 0xc68a5c, pelo: 0x2b1d14, ropa: 0xff8fc2, gorra: 0xff8fc2 });
+/* Cada cuadro: la etiqueta sigue los pies de su figura. */
+const pies = new THREE.Vector3();
+function moverEtiquetas(w, h, caja) {
+  for (const [q, el] of etiqueta) {
+    if (!q.persona) continue;
+    pies.set(0, .02, .18); q.persona.grupo.localToWorld(pies); pies.project(camara);
+    const x = (pies.x + 1) / 2 * w, y = (1 - pies.y) / 2 * h;
+    // fuera de la pantalla o detrás del panel, no se ve
+    const tapada = pies.z > 1 || x < -40 || x > w + 40 || (caja && y + 34 > caja.top && x > caja.left && x < caja.right);
+    el.style.visibility = tapada ? 'hidden' : '';
+    el.style.left = `${Math.min(w - 36, Math.max(36, x))}px`; el.style.top = `${y}px`;
+  }
+}
 
 /* ─── el escenario ─────────────────────────────────────────── */
 let esc = null;
@@ -753,7 +732,7 @@ function grita(quien, texto, ms = 1800, sub, tono) {
   el.classList.remove('ve'); void el.offsetWidth; el.classList.add('ve');
   clearTimeout(el._t); el._t = setTimeout(() => el.classList.remove('ve'), ms);
   if (quien.persona) { quien.persona.grita(Math.min(ms, 1200)); hablando = quien; }
-  const i = rondaLista.indexOf(quien), li = $('ronda').children[i];
+  const li = etiqueta.get(quien);
   if (li) { li.classList.add('habla'); clearTimeout(li._t); li._t = setTimeout(() => li.classList.remove('habla'), Math.min(ms, 1100)); }
 }
 let hablando = null;   // a quien mira la gente mientras no ruedan
@@ -765,8 +744,7 @@ function moverGlobos() {
   const techo = document.querySelector('.hud-juego__arriba').getBoundingClientRect().bottom + 40;
   const mesaVisible = [...document.querySelectorAll('.mesa')].find(m => !m.hidden);
   let caja = mesaVisible && mesaVisible.getBoundingClientRect();
-  const rondaEl = $('ronda');
-  if (caja && !rondaEl.hidden) { const r = rondaEl.getBoundingClientRect(); caja = { left: Math.min(caja.left, r.left), right: Math.max(caja.right, r.right), top: Math.min(caja.top, r.top), bottom: caja.bottom }; }
+  moverEtiquetas(w, h, caja);
   const puestos = [];
   for (const [quien, el] of globos) {
     if (!el.classList.contains('ve')) continue;
@@ -971,10 +949,7 @@ function medir() {
   const arriba = document.querySelector('.hud-juego__arriba').getBoundingClientRect().bottom;
   const mesa = [...document.querySelectorAll('.mesa')].find(m => !m.hidden);
   // solo estorba si tapa el medio: en pantalla ancha la mesa va a un lado
-  let caja = mesa && mesa.getBoundingClientRect();
-  // la franja de retratos va encima del panel: también tapa
-  const ronda = $('ronda');
-  if (caja && !ronda.hidden) { const r = ronda.getBoundingClientRect(); caja = { left: Math.min(caja.left, r.left), right: Math.max(caja.right, r.right), top: Math.min(caja.top, r.top), bottom: caja.bottom }; }
+  const caja = mesa && mesa.getBoundingClientRect();
   camara.aspect = aspecto;
   if (aspecto > 1.3 && caja && caja.right < w * .62 && caja.top < h * .5) {
     // acostado, con la mesa al costado: la tina se corre al espacio libre de la derecha
@@ -1189,7 +1164,7 @@ function nuevaRonda() {
   enLaMano(ENFRENTE);
   finGente = performance.now() + GRITADERA * 1000; proximoVecino = .3;
   est.fase = 'gente'; mesa('m-gente');
-  $('ronda').hidden = false; marcarRonda('gana', []); marcarRonda('pierde', []);
+  marcarRonda('gana', []); marcarRonda('pierde', []);
   contar(); pintar();
   grita(est.eresBanca ? TU : BANCA, '¡Ya, ya! ¿Pares o nones?', 2200);
   sonar('gente', .5);
