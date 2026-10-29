@@ -442,7 +442,7 @@ body{-webkit-touch-callout:none}
               <button class="chip" type="button" data-escenario="plaza" aria-pressed="false">Plaza</button>
               <button class="chip" type="button" data-escenario="tienda" aria-pressed="false">Tienda</button>
             </div>
-            <p class="expl__x">Empiezas con <b>cinco dólares</b> de mentira, que se guardan en este navegador.</p>
+            <p class="expl__x">Empiezas con <b>cinco dólares</b> de mentira, que se guardan en este navegador. Cada ronda y cada logro te dan <b>guaguas</b> para <a href="../../../perfil/" target="_top">tu perfil</a>.</p>
           </section>
         </div>
       </div>
@@ -487,6 +487,7 @@ body{-webkit-touch-callout:none}
 import * as THREE from './three.module.min.js';
 import { Persona } from './gente.js?v=2';
 import { construir as construirEscenario, ESCENARIOS } from './escenarios.js?v=3';
+import * as perfil from '../../../perfil/perfil.js?v=1';
 
 const $ = id => document.getElementById(id);
 const lienzo = $('tina');
@@ -505,6 +506,7 @@ const est = {
   saldo: Number.isFinite(guardado.saldo) ? guardado.saldo : INICIAL,
   banca: Number.isFinite(guardado.banca) ? guardado.banca : BANCA_INICIAL,
   eresBanca: guardado.eresBanca === true,
+  rondasBanca: guardado.rondasBanca || 0,   // para el logro de aguantar de banca
   todo: false,
   sonido: guardado.sonido !== false,
   escenario: guardado.escenario in ESCENARIOS ? guardado.escenario : 'comunidad',
@@ -514,7 +516,7 @@ const est = {
   apostado: 0,      // tus monedas en la mesa, en centavos
   juegas: false,
 };
-const guardar = () => { try { localStorage.setItem(CLAVE, JSON.stringify({ saldo: est.saldo, banca: est.banca, eresBanca: est.eresBanca, sonido: est.sonido, escenario: est.escenario,
+const guardar = () => { try { localStorage.setItem(CLAVE, JSON.stringify({ saldo: est.saldo, banca: est.banca, eresBanca: est.eresBanca, rondasBanca: est.rondasBanca, sonido: est.sonido, escenario: est.escenario,
   vecinos: Object.fromEntries([...VECINOS, BANCA].map(v => [v.nombre, v.plata])) })); } catch (e) {} };
 
 /* ─── sonido: WebAudio, sin archivos ───────────────────────── */
@@ -1251,6 +1253,7 @@ function gritar(lado, x, y) {
   chispa(`+${mult}`, lado, x, y);
   sonar('jalon', mult); vibrar(mult > 1 ? 12 : 6);
   const el = $('combo');
+  if (mult === 4) perfil.desbloquear('boliche-griton');
   if (mult > 1) { const t = `COMBO ×${mult}`; if (el.textContent !== t) { el.textContent = t; el.classList.remove('sube'); void el.offsetWidth; el.classList.add('sube'); } }
   else el.textContent = '';
   if (gritos % 6 === 1) grita(TU, `¡${lado === 'pares' ? 'Pares' : 'Nones'}!`, 700);
@@ -1550,6 +1553,7 @@ function decidir() {
     est.banca += apostado;
     if (est.juegas) { const n = pila(TU).userData.n; vaciar(TU); volar(TU, BANCA, n, .3); est.banca += est.apostado; }
   }
+  logrosDeLaRonda(r, gana);
   const ganaron = gana ? jugadores.concat(est.juegas ? [TU] : []) : [];
   const perdieron = gana ? [] : jugadores.concat(est.juegas ? [TU] : []);
   marcarRonda('gana', ganaron); marcarRonda('pierde', perdieron); pintarRonda();
@@ -1577,6 +1581,21 @@ function decidir() {
   setTimeout(() => { if (est.fase === 'fin') { mesa('m-fin'); $('b-otra').focus({ preventScroll: true }); if (quebro) quiebra(); } }, 900);
 }
 
+/* Lo que va al perfil compartido: una guagua por ronda jugada (con el
+   tope del día) y los logros. */
+function logrosDeLaRonda(r, gana) {
+  if (est.juegas || est.eresBanca) perfil.ganar(1, 'boliche');
+  if (est.juegas) perfil.desbloquear('boliche-primera');
+  if (est.juegas && gana) {
+    if (est.todo) perfil.desbloquear('boliche-con-todo');
+    if (est.quieres === est.vamos) perfil.desbloquear('boliche-lo-dije');
+  }
+  if (!est.juegas && !est.eresBanca && !gana && gente().some(v => v.juega)) perfil.desbloquear('boliche-buen-ojo');
+  if (r.redondo === 4) perfil.desbloquear('boliche-pares-limpio');
+  if (r.redondo === 0 || r.cajita === 0) perfil.desbloquear('boliche-todas-a-un-lado');
+  if (est.eresBanca && (est.rondasBanca = (est.rondasBanca || 0) + 1) >= 10) perfil.desbloquear('boliche-banca-de-una-noche');
+}
+
 /* La banca se quedó sin plata: se quiebra. Si la quebraste tú, pasas a
    ser la banca; si eras la banca y te quebraron, vuelve Don Segundo. */
 function quiebra() {
@@ -1587,6 +1606,7 @@ function quiebra() {
     $('b-ser-banca').textContent = 'Volver a apostar';
   } else {
     grita(BANCA, '¡Me quebraron!', 2400); BANCA.persona.lamenta();
+    perfil.desbloquear('boliche-quebraste');
     $('quiebra-t').textContent = `${BANCA.nombre} se quedó sin un centavo.`;
     $('quiebra-x').textContent = 'Ahora la banca eres tú: tu plata es la de la banca, la gente grita, vas por lo que pida la mayoría y lanzas. Si sale lo de ellos, pagas el doble; si no, barres la mesa. Ahora ellos intentan quebrarte.';
     $('b-ser-banca').textContent = 'Ser la banca';
@@ -1643,7 +1663,7 @@ $('b-todo').addEventListener('click', irConTodo);
 $('b-ser-banca').addEventListener('click', () => {
   $('c-quiebra').hidden = true;
   if (est.eresBanca) { est.eresBanca = false; est.banca = BANCA_INICIAL; if (est.saldo < INICIAL) est.saldo = INICIAL; }
-  else { est.eresBanca = true; est.banca = est.saldo; est.saldo = 0; BANCA.plata = Math.max(BANCA.plata, PLATA_VECINO['Don Segundo']); }
+  else { est.eresBanca = true; est.rondasBanca = 0; est.banca = est.saldo; est.saldo = 0; BANCA.plata = Math.max(BANCA.plata, PLATA_VECINO['Don Segundo']); }
   for (const g of pilas.values()) escena.remove(g); pilas.clear();   // la pila de la banca cambia de dueño y de sitio
   guardar(); pintar(); nuevaRonda();
 });
