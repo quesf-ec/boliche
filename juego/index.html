@@ -442,7 +442,7 @@ body{-webkit-touch-callout:none}
               <button class="chip" type="button" data-escenario="plaza" aria-pressed="false">Plaza</button>
               <button class="chip" type="button" data-escenario="tienda" aria-pressed="false">Tienda</button>
             </div>
-            <p class="expl__x">Empiezas con <b>cinco dólares</b> de mentira, que se guardan en este navegador. Cada ronda y cada logro te dan <b>guaguas</b> para <a href="../../../perfil/" target="_top">tu perfil</a>.</p>
+            <p class="expl__x">Empiezas con <b>cinco dólares</b> de mentira, que se guardan en este navegador. Cada ronda y cada logro te dan <b>sucres</b> para <a href="../../../perfil/" target="_top">tu perfil</a>.</p>
           </section>
         </div>
       </div>
@@ -487,7 +487,7 @@ body{-webkit-touch-callout:none}
 import * as THREE from './three.module.min.js';
 import { Persona } from './gente.js?v=2';
 import { construir as construirEscenario, ESCENARIOS } from './escenarios.js?v=3';
-import * as perfil from '../../../perfil/perfil.js?v=1';
+import * as perfil from '../../../perfil/perfil.js?v=2';
 
 const $ = id => document.getElementById(id);
 const lienzo = $('tina');
@@ -1581,7 +1581,7 @@ function decidir() {
   setTimeout(() => { if (est.fase === 'fin') { mesa('m-fin'); $('b-otra').focus({ preventScroll: true }); if (quebro) quiebra(); } }, 900);
 }
 
-/* Lo que va al perfil compartido: una guagua por ronda jugada (con el
+/* Lo que va al perfil compartido: un sucre por ronda jugada (con el
    tope del día) y los logros. */
 function logrosDeLaRonda(r, gana) {
   if (est.juegas || est.eresBanca) perfil.ganar(1, 'boliche');
