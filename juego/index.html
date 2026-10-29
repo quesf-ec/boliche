@@ -176,7 +176,7 @@ body{-webkit-touch-callout:none}
 .sin-3d{position:absolute;inset:auto 0 50% 0;text-align:center;padding:var(--mal-e5)}
 </style>
 <!-- el tema propio del juego: un fork del de juegos, ver boliche.css -->
-<link rel="stylesheet" href="boliche.css?v=1">
+<link rel="stylesheet" href="boliche.css?v=5">
 <script type="application/ld+json">
 {
  "@context": "https://schema.org",
@@ -922,8 +922,21 @@ function mesa(cual) {
   for (const id of ['m-gente', 'm-apuesta', 'm-lanzar', 'm-rueda', 'm-fin']) $(id).hidden = id !== cual;
   medir();
 }
+/* La plata no salta: cuenta hasta el nuevo valor, como un marcador. */
+let saldoVisto = est.saldo, saldoAnim = 0;
+function pintarSaldo(desde, hasta) {
+  cancelAnimationFrame(saldoAnim);
+  const t0 = performance.now(), dur = Math.min(900, 250 + Math.abs(hasta - desde) * 2);
+  const paso = ahora => {
+    const k = Math.min(1, (ahora - t0) / dur), e = 1 - Math.pow(1 - k, 3);
+    saldoVisto = Math.round(desde + (hasta - desde) * e);
+    $('saldo').innerHTML = `${plata(saldoVisto)}<small>tu plata</small>`;
+    if (k < 1) saldoAnim = requestAnimationFrame(paso);
+  };
+  paso(t0);
+}
 function pintar() {
-  $('saldo').innerHTML = `${plata(est.saldo)}<small>tu plata</small>`;
+  if (est.saldo !== saldoVisto) pintarSaldo(saldoVisto, est.saldo);
   const badge = $('apuesta-badge');
   badge.hidden = !(est.juegas && est.apostado);
   badge.textContent = est.juegas ? `${plata(est.apostado)} a ${est.vamos}` : '';
@@ -967,6 +980,7 @@ function contar() {
 function gritadera(dt, ahora) {
   const reloj = (finGente - ahora) / 1000;
   $('reloj-gente').style.width = `${Math.max(0, reloj / GRITADERA) * 100}%`;
+  $('m-gente').style.setProperty('--tiempo', Math.max(0, reloj / GRITADERA));
   proximoVecino -= dt;
   if (proximoVecino <= 0) {
     proximoVecino = .45 + Math.random() * .6;
@@ -1234,7 +1248,8 @@ function sellar(texto, sub, tono) {
   const el = $('sello');
   el.className = 'sello sello--' + tono;
   el.innerHTML = '';
-  el.append(texto); const s = document.createElement('small'); s.textContent = sub; el.append(s);
+  const b = document.createElement('b'); b.textContent = texto; el.append(b);
+  const s = document.createElement('small'); s.textContent = sub; el.append(s);
   void el.offsetWidth; el.classList.add('ve');
 }
 function delta(centavos) {
