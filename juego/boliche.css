@@ -193,7 +193,7 @@
 [data-marca="boliche"] .delta{font-family:var(--mal-display);font-weight:900;text-shadow:0 0 10px currentColor}
 
 /* ─── lo que grita la gente ──────────────────────────────────── */
-[data-marca="boliche"] .globo{font-family:var(--mal-display);font-weight:800;font-size:.76rem;letter-spacing:.02em;
+[data-marca="boliche"] .globo{font-family:var(--mal-display);font-weight:900;font-size:1rem;letter-spacing:.01em;
   background:rgba(20,12,9,.82);color:var(--bo-papel);border:1px solid rgba(255,246,230,.25);box-shadow:0 6px 16px rgba(0,0,0,.45);
   -webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px)}
 [data-marca="boliche"] .globo::after{border-width:0 1px 1px 0}
