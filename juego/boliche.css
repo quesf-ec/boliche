@@ -4,204 +4,267 @@
    todo lo demás: los componentes son los mismos (.btn, .chip, .vidrio,
    .marcador…), solo cambia la materia.
 
-   De dónde sale cada cosa:
-   · El maíz de la guagua de pan es el color de marca, y su corteza, la
-     sombra dura de los botones.
-   · La colada morada y el celeste de las canicas son los dos bandos:
-     NONES es morado (la cajita) y PARES es celeste (el redondo). Se
-     usan igual en los botones, en el conteo y en el sello del final.
-   · Los paneles son tablas pintadas, con el filete de los rótulos a
-     mano y una tira de banderines de feria colgada encima.
-   · Los botones son rótulos: Montserrat negrita, mayúsculas, contorno
-     de tinta y sombra dura. Los redondos de arriba son chapas de cola.
-   · Es de noche siempre: se juega alrededor del foco.
+   La materia es la de un HUD de videojuego, no la de un rótulo de
+   feria: paneles de vidrio oscuro con un filo de luz, botones con
+   brillo que se iluminan al poder tocarlos, cifras condensadas y
+   nítidas, viñeta y grano sobre la imagen. Los colores sí son de la
+   fiesta: el maíz de la guagua de pan es la marca; el celeste de las
+   canicas es PARES (el redondo) y el morado de la colada es NONES (la
+   cajita), igual en los botones, el conteo y el resultado.
 
    Se activa con `data-marca="boliche"` en el <html>. Va después de
    mal.css y del <style> de la página. */
 
 :root[data-marca="boliche"]{
   /* ── los colores de la feria ── */
-  --bo-maiz:#F2B33D;        --bo-corteza:#B86A22;
-  --bo-colada:#7E3592;      --bo-colada-2:#5B2470;
-  --bo-canica:#5FB4E6;      --bo-canica-2:#2F7FB5;
-  --bo-achiote:#D7392B;     --bo-hoja:#4E9A3A;
-  --bo-glaseado:#F28AB8;    /* el rosado del glaseado de las guaguas: tu voz */
-  --bo-papel:#F6EBD3;       --bo-tinta:#24150F;
-  --bo-tabla:#3A271E;       --bo-tabla-2:#2E1F18;
-  --bo-noche:#1B110D;
+  --bo-maiz:#F7B943;        --bo-maiz-2:#FFD98A;   --bo-corteza:#B86A22;
+  --bo-colada:#9A4BB0;      --bo-colada-2:#C98BE0;
+  --bo-canica:#58B9F0;      --bo-canica-2:#A6DDFF;
+  --bo-achiote:#F0513F;     --bo-hoja:#5FC25A;
+  --bo-glaseado:#FF8FC2;    /* el rosado del glaseado de las guaguas: tu voz */
+  --bo-papel:#FFF6E6;       --bo-tinta:#120B08;
+  --bo-noche:#140C09;       --bo-humo:#2A1A13;
 
   /* ── capa 1 · referencia ── */
-  --ref-marca:var(--bo-maiz); --ref-marca-2:var(--bo-corteza); --ref-marca-txt:var(--bo-maiz);
+  --ref-marca:var(--bo-maiz); --ref-marca-2:#E09C2C; --ref-marca-txt:var(--bo-maiz);
   --ref-sobre-marca:var(--bo-tinta); --ref-acento:var(--bo-canica); --ref-acento-2:var(--bo-colada);
-  --ref-n0:var(--bo-noche); --ref-n1:#2B1C16; --ref-n2:var(--bo-tabla); --ref-n3:#47302A;
-  --ref-t0:var(--bo-papel); --ref-t1:#E4D2B2; --ref-t2:#BDA683;
-  --ref-borde-rgb:246,235,211; --ref-marca-rgb:242,179,61;
+  --ref-n0:var(--bo-noche); --ref-n1:#1E1310; --ref-n2:#221611; --ref-n3:#2E1F18;
+  --ref-t0:var(--bo-papel); --ref-t1:#D9C7A8; --ref-t2:#A8947A;
+  --ref-borde-rgb:255,246,230; --ref-marca-rgb:247,185,67;
 
   --ref-display:"Montserrat","Arial Black",system-ui,sans-serif;
   --ref-texto:"Inter",system-ui,-apple-system,"Segoe UI",sans-serif;
-  --ref-mono:"Montserrat",system-ui,sans-serif;     /* las cifras y los rótulos van pintados, no tecleados */
+  --ref-mono:"Montserrat",system-ui,sans-serif;
   --ref-peso-display:900;
   --ref-tracking:-.01em;
 
-  --ref-radio:.6;            /* tablas con las esquinas apenas gastadas */
-  --ref-borde:3px;           /* el contorno de tinta de los rótulos */
+  --ref-radio:.9;
+  --ref-borde:1px;
   --ref-densidad:1;
   --ref-tap:52px;
-  --ref-elev-1:0 4px 0 #120A07;
-  --ref-elev-2:0 6px 0 #120A07, 0 16px 30px rgba(0,0,0,.45);
-  --ref-relleno-marca:linear-gradient(180deg, #F8C962 0%, var(--bo-maiz) 55%, #E39A2A 100%);
+  --ref-elev-1:0 8px 24px rgba(0,0,0,.45);
+  --ref-elev-2:0 18px 50px rgba(0,0,0,.6);
+  --ref-relleno-marca:linear-gradient(180deg, var(--bo-maiz-2) 0%, var(--bo-maiz) 45%, #E39A2A 100%);
   --ref-destello:transparent;
-  --ref-salto:translateY(-2px);
-  --ref-presion:translateY(3px);
-  --ref-fondo:radial-gradient(120% 80% at 50% 0%, #3A2418 0%, var(--bo-noche) 60%);
-  --mal-ok:#7BC96A; --mal-warn:var(--bo-maiz); --mal-danger:#FF7A6E;
+  --ref-salto:translateY(-1px);
+  --ref-presion:scale(.97);
+  --ref-fondo:var(--bo-noche);
+  --mal-ok:var(--bo-hoja); --mal-warn:var(--bo-maiz); --mal-danger:var(--bo-achiote);
   color-scheme:dark;
-}
 
-/* ── lo que se pinta con eso ── */
-:root[data-marca="boliche"]{
-  /* la tira de banderines: rojo, maíz, celeste, morado y verde, en un cordel */
-  --bo-banderines:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='90' height='22' viewBox='0 0 90 22'%3E%3Cpath d='M0 3 Q45 7 90 3' fill='none' stroke='%23F6EBD3' stroke-width='1.4'/%3E%3Cpath d='M2 3.6 L16 4.3 L9 19Z' fill='%23D7392B'/%3E%3Cpath d='M20 4.4 L34 4.9 L27 20Z' fill='%23F2B33D'/%3E%3Cpath d='M38 5 L52 5 L45 20.5Z' fill='%235FB4E6'/%3E%3Cpath d='M56 4.9 L70 4.4 L63 20Z' fill='%237E3592'/%3E%3Cpath d='M74 4.3 L88 3.6 L81 19Z' fill='%234E9A3A'/%3E%3C/svg%3E");
-  /* la veta de la madera de las tablas */
-  --bo-veta:repeating-linear-gradient(178deg, rgba(255,255,255,.025) 0 2px, transparent 2px 9px,
-            rgba(0,0,0,.06) 9px 10px, transparent 10px 17px);
+  /* ── lo que se pinta con eso ── */
+  --bo-vidrio:linear-gradient(180deg, rgba(42,26,19,.78), rgba(20,12,9,.86));
+  --bo-filo:1px solid rgba(255,246,230,.14);
+  --bo-luz:inset 0 1px 0 rgba(255,246,230,.18);
+  --bo-halo-maiz:0 0 0 1px rgba(247,185,67,.55), 0 0 24px rgba(247,185,67,.35);
+  --bo-grano:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 .5 0'/%3E%3C/filter%3E%3Crect width='160' height='160' filter='url(%23n)'/%3E%3C/svg%3E");
 }
 
 [data-marca="boliche"] body{background:var(--ref-fondo);color:var(--bo-papel)}
 
-/* ─── las tablas pintadas ─────────────────────────────────── */
+/* ─── sobre la imagen: viñeta y grano, como una cámara ───────── */
+[data-marca="boliche"] .escena::before{
+  content:"";position:absolute;inset:0;pointer-events:none;z-index:13;
+  background:radial-gradient(115% 85% at 50% 45%, transparent 50%, rgba(10,5,3,.6) 100%);
+}
+[data-marca="boliche"] #tina{filter:contrast(1.06) saturate(1.08)}
+[data-marca="boliche"] .globos::before{
+  content:"";position:absolute;inset:0;pointer-events:none;
+  background:var(--bo-grano) repeat 0 0 / 160px;opacity:.07;mix-blend-mode:overlay;
+}
+/* el latido cuando falta una: un borde de maíz que respira */
+[data-marca="boliche"] .escena::after{box-shadow:inset 0 0 140px 30px rgba(247,185,67,.38)}
+
+/* ─── los paneles: vidrio oscuro con un filo de luz ───────────── */
 [data-marca="boliche"] .vidrio{
   position:relative;
-  background:var(--bo-veta), linear-gradient(180deg, color-mix(in srgb, var(--bo-tabla) 96%, transparent), color-mix(in srgb, var(--bo-tabla-2) 97%, transparent));
-  -webkit-backdrop-filter:none;backdrop-filter:none;
-  border:3px solid var(--bo-tinta);
-  border-radius:calc(14px * var(--ref-radio));
-  /* el filete de los rótulos: una raya de maíz por dentro, a mano */
-  box-shadow:inset 0 0 0 3px var(--bo-tabla), inset 0 0 0 5px rgba(242,179,61,.55), var(--ref-elev-2);
+  background:var(--bo-vidrio);
+  -webkit-backdrop-filter:blur(18px) saturate(140%);backdrop-filter:blur(18px) saturate(140%);
+  border:var(--bo-filo);
+  border-radius:calc(20px * var(--ref-radio));
+  box-shadow:var(--bo-luz), var(--ref-elev-2);
 }
-/* los banderines, colgados encima de cada panel */
-[data-marca="boliche"] .mesa::before,
-[data-marca="boliche"] .capa__panel::before{
-  content:"";position:absolute;left:10px;right:10px;top:-13px;height:22px;pointer-events:none;
-  background:var(--bo-banderines) repeat-x left top / 90px 22px;
-  filter:drop-shadow(0 2px 0 rgba(0,0,0,.35));
+/* la esquina biselada y la línea de acento arriba a la izquierda */
+[data-marca="boliche"] .mesa::before,[data-marca="boliche"] .capa__panel::before{
+  content:"";position:absolute;left:18px;top:0;width:64px;height:2px;border-radius:2px;pointer-events:none;
+  background:linear-gradient(90deg, var(--bo-maiz), transparent);
 }
-[data-marca="boliche"] .capa__panel.portada{overflow:visible}
-[data-marca="boliche"] .portada__pie{border-top:2px dashed rgba(242,179,61,.35)}
+[data-marca="boliche"] .mesa{padding-top:calc(var(--mal-e4) + 2px)}
+[data-marca="boliche"] .capa__panel.portada{overflow:hidden}
+[data-marca="boliche"] .portada__pie{border-top:1px solid rgba(255,246,230,.1);background:rgba(0,0,0,.18)}
 
-/* ─── los rótulos ─────────────────────────────────────────── */
-[data-marca="boliche"] .kicker{color:var(--bo-maiz);font-weight:800;letter-spacing:.14em}
-[data-marca="boliche"] .kicker::before{width:9px;height:9px;background:var(--bo-maiz);transform:rotate(45deg);border-radius:1px}
-[data-marca="boliche"] .micro{font-weight:700;color:var(--ref-t2)}
+/* ─── los rótulos: condensados, en mayúsculas ─────────────────── */
+[data-marca="boliche"] .kicker{color:var(--bo-maiz);font-weight:800;letter-spacing:.2em;font-size:.68rem}
+[data-marca="boliche"] .kicker::before{width:14px;height:2px;background:var(--bo-maiz);border-radius:2px}
+[data-marca="boliche"] .micro{font-weight:700;letter-spacing:.18em;font-size:.66rem;color:var(--ref-t2);white-space:nowrap}
 [data-marca="boliche"] .caption{color:var(--ref-t1)}
-[data-marca="boliche"] h1,[data-marca="boliche"] h2{font-family:var(--mal-display);font-weight:900;letter-spacing:-.01em}
-/* el título de la portada, como letrero de feria: maíz con sombra roja y de tinta */
+[data-marca="boliche"] h1,[data-marca="boliche"] h2{font-family:var(--mal-display);font-weight:900;letter-spacing:-.02em}
+/* el título: letras grandes con un degradado de maíz y un resplandor */
 [data-marca="boliche"] .portada h1{
-  color:var(--bo-maiz);text-transform:uppercase;letter-spacing:.01em;
-  text-shadow:3px 3px 0 var(--bo-achiote), 6px 6px 0 var(--bo-tinta);
+  text-transform:uppercase;letter-spacing:.02em;line-height:.95;
+  background:linear-gradient(180deg, #FFF0C2 0%, var(--bo-maiz) 55%, #D98A1E 100%);
+  -webkit-background-clip:text;background-clip:text;color:transparent;
+  filter:drop-shadow(0 2px 0 rgba(0,0,0,.6)) drop-shadow(0 0 18px rgba(247,185,67,.35));
 }
 [data-marca="boliche"] .mesa__dice,[data-marca="boliche"] .mesa__suma{font-family:var(--mal-display);font-weight:900;letter-spacing:-.01em}
 [data-marca="boliche"] .reglas .icono{color:var(--bo-maiz)}
-[data-marca="boliche"] .reglas b{color:var(--bo-papel)}
+[data-marca="boliche"] .reglas b,[data-marca="boliche"] .expl__x b{color:var(--bo-papel)}
+[data-marca="boliche"] .expl__n{background:var(--ref-relleno-marca);color:var(--bo-tinta);box-shadow:0 0 14px rgba(247,185,67,.45)}
+[data-marca="boliche"] .puntos i{background:rgba(255,246,230,.22)}
+[data-marca="boliche"] .puntos i.ve{background:var(--bo-maiz);box-shadow:0 0 10px rgba(247,185,67,.6)}
 
-/* ─── botones-rótulo ──────────────────────────────────────── */
+/* ─── botones: pastillas con brillo ───────────────────────────── */
 [data-marca="boliche"] .btn{
-  font-family:var(--mal-display);font-weight:800;text-transform:uppercase;letter-spacing:.04em;
-  background:var(--bo-papel);color:var(--bo-tinta);border:3px solid var(--bo-tinta);
-  box-shadow:0 4px 0 #120A07;
+  font-family:var(--mal-display);font-weight:800;text-transform:uppercase;letter-spacing:.08em;font-size:.82rem;
+  background:linear-gradient(180deg, rgba(255,246,230,.12), rgba(255,246,230,.04));color:var(--bo-papel);
+  border:1px solid rgba(255,246,230,.22);
+  box-shadow:inset 0 1px 0 rgba(255,246,230,.18), 0 6px 18px rgba(0,0,0,.35);
+  position:relative;overflow:hidden;
 }
-[data-marca="boliche"] .btn:hover{color:var(--bo-tinta);border-color:var(--bo-tinta);box-shadow:0 6px 0 #120A07}
-[data-marca="boliche"] .btn:active{transform:translateY(3px);box-shadow:0 1px 0 #120A07}
+[data-marca="boliche"] .btn:hover{color:var(--bo-papel);border-color:rgba(255,246,230,.45);box-shadow:inset 0 1px 0 rgba(255,246,230,.25), 0 8px 22px rgba(0,0,0,.4)}
+[data-marca="boliche"] .btn:active{transform:scale(.97)}
 [data-marca="boliche"] .btn--rojo,[data-marca="boliche"] .btn--rojo:hover{
-  background:var(--ref-relleno-marca);color:var(--bo-tinta);border-color:var(--bo-tinta);
-  box-shadow:0 4px 0 var(--bo-corteza), 0 4px 0 3px var(--bo-tinta);
+  background:var(--ref-relleno-marca);color:var(--bo-tinta);border-color:rgba(255,246,230,.35);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.55), 0 0 0 1px rgba(247,185,67,.35), 0 10px 26px rgba(247,185,67,.3);
 }
-[data-marca="boliche"] .btn--rojo:active{box-shadow:0 1px 0 var(--bo-corteza), 0 1px 0 3px var(--bo-tinta)}
-[data-marca="boliche"] .btn:disabled{opacity:.45;filter:saturate(.4)}
+/* el reflejo que cruza el botón principal, para que llame */
+[data-marca="boliche"] .btn--rojo::after{
+  content:"";position:absolute;inset:0;pointer-events:none;
+  background:linear-gradient(115deg, transparent 30%, rgba(255,255,255,.55) 48%, transparent 56%);
+  transform:translateX(-120%);animation:bo-reflejo 3.2s ease-in-out infinite;
+}
+[data-marca="boliche"] .btn--rojo:disabled::after{animation:none}
+@keyframes bo-reflejo{0%,55%{transform:translateX(-120%)}85%,100%{transform:translateX(120%)}}
+[data-marca="boliche"] .btn:disabled{opacity:.4;filter:saturate(.3)}
 [data-marca="boliche"] .btn-ghost{background:transparent;border-color:transparent;box-shadow:none;color:var(--bo-maiz)}
-[data-marca="boliche"] .boton-juego{font-size:1.05rem}
+[data-marca="boliche"] .boton-juego{font-size:.95rem;min-height:58px}
 
 /* los dos bandos: pares celeste (el redondo), nones morado (la cajita) */
-[data-marca="boliche"] [data-grita="pares"]{background:linear-gradient(180deg, #8FCDF0, var(--bo-canica));color:var(--bo-tinta);
-  box-shadow:0 4px 0 var(--bo-canica-2), 0 4px 0 3px var(--bo-tinta)}
-[data-marca="boliche"] [data-grita="nones"]{background:linear-gradient(180deg, #A456B8, var(--bo-colada));color:var(--bo-papel);
-  box-shadow:0 4px 0 var(--bo-colada-2), 0 4px 0 3px var(--bo-tinta)}
-[data-marca="boliche"] [data-grita]:active{box-shadow:0 1px 0 var(--bo-tinta)}
-[data-marca="boliche"] .conteo{font-family:var(--mal-display);font-weight:900}
-[data-marca="boliche"] #n-pares{color:var(--bo-canica)}
-[data-marca="boliche"] #n-nones{color:#C88BDA}
-[data-marca="boliche"] .conteo .medidor{height:12px;background:var(--bo-colada);border:2px solid var(--bo-tinta);border-radius:999px;
-  --mal-relleno-medidor:var(--bo-canica)}
+[data-marca="boliche"] [data-grita="pares"],[data-marca="boliche"] [data-grita="pares"]:hover{
+  background:linear-gradient(180deg, var(--bo-canica-2), var(--bo-canica) 60%, #2F7FB5);color:var(--bo-tinta);
+  border-color:rgba(166,221,255,.5);box-shadow:inset 0 1px 0 rgba(255,255,255,.5), 0 0 22px rgba(88,185,240,.35)}
+[data-marca="boliche"] [data-grita="nones"],[data-marca="boliche"] [data-grita="nones"]:hover{
+  background:linear-gradient(180deg, var(--bo-colada-2), var(--bo-colada) 60%, #5B2470);color:#fff;
+  border-color:rgba(201,139,224,.5);box-shadow:inset 0 1px 0 rgba(255,255,255,.35), 0 0 22px rgba(154,75,176,.4)}
+[data-marca="boliche"] .conteo{font-family:var(--mal-display);font-weight:900;font-size:.9rem;letter-spacing:.02em}
+[data-marca="boliche"] #n-pares{color:var(--bo-canica-2)}
+[data-marca="boliche"] #n-nones{color:var(--bo-colada-2)}
+[data-marca="boliche"] .conteo .medidor{height:10px;background:var(--bo-colada);border:0;border-radius:999px;
+  box-shadow:inset 0 1px 2px rgba(0,0,0,.5), 0 0 14px rgba(154,75,176,.35);--mal-relleno-medidor:var(--bo-canica);overflow:hidden}
+[data-marca="boliche"] .conteo .medidor > i{box-shadow:0 0 14px rgba(88,185,240,.6);transition:width .35s var(--mal-ease)}
+/* el reloj de la gritadera: una línea de maíz que se consume */
+[data-marca="boliche"] #reloj-gente{background:linear-gradient(90deg, var(--bo-achiote), var(--bo-maiz));box-shadow:0 0 10px rgba(247,185,67,.5)}
+[data-marca="boliche"] .medidor--fino{height:4px;background:rgba(255,246,230,.08)}
 
-/* las chapas de cola: los botones redondos de arriba */
+/* los botones redondos de arriba: discos de vidrio */
 [data-marca="boliche"] .btn--icono{
-  border-radius:50%;border:0;color:var(--bo-papel);
-  background:radial-gradient(circle, var(--bo-achiote) 0 56%, transparent 57%),
-    repeating-conic-gradient(#A82418 0 10deg, #E04B3B 10deg 20deg);
-  box-shadow:0 3px 0 #120A07, inset 0 0 0 2px rgba(0,0,0,.25);
+  border-radius:50%;color:var(--bo-papel);
+  background:radial-gradient(circle at 35% 30%, rgba(255,246,230,.18), rgba(255,246,230,.04) 60%), rgba(20,12,9,.6);
+  -webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px);
+  border:1px solid rgba(255,246,230,.2);box-shadow:inset 0 1px 0 rgba(255,246,230,.2), 0 6px 16px rgba(0,0,0,.45);
 }
-[data-marca="boliche"] .btn--icono:hover{color:var(--bo-papel);box-shadow:0 4px 0 #120A07}
-[data-marca="boliche"] .btn--icono[aria-pressed=false]{filter:grayscale(.9) brightness(.8)}
+[data-marca="boliche"] .btn--icono[aria-pressed=false]{color:var(--ref-t2)}
 
-/* los escenarios, como etiquetas de papel */
+/* los escenarios: pestañas */
 [data-marca="boliche"] .chip{
-  font-family:var(--mal-display);font-weight:800;text-transform:uppercase;letter-spacing:.05em;font-size:.78rem;
-  background:transparent;color:var(--bo-papel);border:2px dashed rgba(246,235,211,.45);border-radius:10px;
+  font-family:var(--mal-display);font-weight:800;text-transform:uppercase;letter-spacing:.1em;font-size:.7rem;
+  background:rgba(255,246,230,.05);color:var(--ref-t1);border:1px solid rgba(255,246,230,.16);border-radius:12px;
 }
-[data-marca="boliche"] .chip[aria-pressed=true]{background:var(--bo-papel);color:var(--bo-tinta);border:2px solid var(--bo-tinta);
-  box-shadow:0 3px 0 #120A07}
+[data-marca="boliche"] .chip[aria-pressed=true]{background:rgba(247,185,67,.14);color:var(--bo-maiz);border-color:rgba(247,185,67,.6);
+  box-shadow:var(--bo-halo-maiz)}
 
-/* ─── la plata ────────────────────────────────────────────── */
-[data-marca="boliche"] .marcador{font-family:var(--mal-display);font-weight:900;color:var(--bo-maiz);letter-spacing:-.02em;
-  text-shadow:2px 2px 0 var(--bo-achiote), 4px 4px 0 var(--bo-tinta)}
-[data-marca="boliche"] .marcador small{color:var(--bo-papel);text-shadow:0 1px 2px rgba(0,0,0,.8);font-weight:800;letter-spacing:.14em}
-[data-marca="boliche"] .badge{font-family:var(--mal-display);font-weight:800;background:var(--bo-tinta);color:var(--bo-papel);
-  border:2px solid rgba(246,235,211,.4);border-radius:8px}
-[data-marca="boliche"] .badge-ok{background:var(--bo-hoja);color:#fff;border-color:var(--bo-tinta)}
-[data-marca="boliche"] .badge-danger{background:var(--bo-achiote);color:#fff;border-color:var(--bo-tinta)}
-[data-marca="boliche"] .ficha{font-family:var(--mal-display);font-weight:900}
+/* ─── la plata ───────────────────────────────────────────────── */
+[data-marca="boliche"] .marcador{font-family:var(--mal-display);font-weight:900;letter-spacing:-.02em;
+  background:linear-gradient(180deg, #FFF0C2, var(--bo-maiz) 60%, #E09C2C);-webkit-background-clip:text;background-clip:text;color:transparent;
+  filter:drop-shadow(0 2px 4px rgba(0,0,0,.7))}
+[data-marca="boliche"] .marcador small{color:var(--ref-t1);-webkit-text-fill-color:var(--ref-t1);font-weight:800;letter-spacing:.2em;font-size:.6rem}
+[data-marca="boliche"] .badge{font-family:var(--mal-display);font-weight:800;letter-spacing:.08em;text-transform:uppercase;font-size:.62rem;
+  background:rgba(20,12,9,.7);color:var(--bo-papel);border:1px solid rgba(255,246,230,.2);border-radius:999px;padding:.3rem .6rem;
+  -webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px)}
+[data-marca="boliche"] .badge-ok{background:rgba(95,194,90,.2);color:var(--bo-hoja);border-color:rgba(95,194,90,.5)}
+[data-marca="boliche"] .badge-danger{background:rgba(240,81,63,.2);color:var(--bo-achiote);border-color:rgba(240,81,63,.5)}
+/* las monedas: discos con brillo metálico */
+[data-marca="boliche"] .ficha{font-family:var(--mal-display);font-weight:900;color:#5A4620;border:1px solid rgba(255,255,255,.55);
+  background:radial-gradient(circle at 35% 28%, #FFFBEF, #E8D9B4 45%, #B89B5F 100%);
+  box-shadow:inset 0 0 0 4px rgba(255,255,255,.3), inset 0 -3px 6px rgba(0,0,0,.2), 0 4px 10px rgba(0,0,0,.5)}
+[data-marca="boliche"] #en-mesa{color:var(--bo-maiz);text-shadow:0 0 12px rgba(247,185,67,.4)}
 [data-marca="boliche"] .medidor--continuo{border-radius:999px}
-[data-marca="boliche"] #carga{background:linear-gradient(90deg, var(--bo-canica), var(--bo-maiz) 55%, var(--bo-achiote))}
+[data-marca="boliche"] #carga{background:linear-gradient(90deg, var(--bo-canica), var(--bo-maiz) 55%, var(--bo-achiote));box-shadow:0 0 12px rgba(247,185,67,.5)}
+[data-marca="boliche"] .delta{font-family:var(--mal-display);font-weight:900;text-shadow:0 0 10px currentColor}
 
-/* ─── lo que grita la gente ───────────────────────────────── */
-[data-marca="boliche"] .globo{font-family:var(--mal-display);font-weight:800;background:var(--bo-papel);color:var(--bo-tinta);
-  border-color:var(--bo-tinta);box-shadow:0 3px 0 var(--bo-tinta)}
-[data-marca="boliche"] .globo--banca{background:var(--bo-maiz)}
-[data-marca="boliche"] .globo--tu{background:var(--bo-glaseado)}
+/* ─── lo que grita la gente ──────────────────────────────────── */
+[data-marca="boliche"] .globo{font-family:var(--mal-display);font-weight:800;font-size:.76rem;letter-spacing:.02em;
+  background:rgba(20,12,9,.82);color:var(--bo-papel);border:1px solid rgba(255,246,230,.25);box-shadow:0 6px 16px rgba(0,0,0,.45);
+  -webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px)}
+[data-marca="boliche"] .globo::after{border-width:0 1px 1px 0}
+[data-marca="boliche"] .globo--banca{background:rgba(247,185,67,.92);color:var(--bo-tinta);border-color:transparent}
+[data-marca="boliche"] .globo--tu{background:rgba(255,143,194,.92);color:var(--bo-tinta);border-color:transparent}
 
-/* ─── el sello del final: un timbre de caucho, con su desgaste ── */
-[data-marca="boliche"] .sello{font-family:var(--mal-display);font-weight:900;text-transform:uppercase;
-  border:6px double #fff;border-radius:14px;
-  -webkit-mask-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='g'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2'/%3E%3CfeColorMatrix values='0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 -2.2 2.1'/%3E%3C/filter%3E%3Crect width='160' height='160' filter='url(%23g)'/%3E%3C/svg%3E");
-  mask-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='g'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2'/%3E%3CfeColorMatrix values='0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 -2.2 2.1'/%3E%3C/filter%3E%3Crect width='160' height='160' filter='url(%23g)'/%3E%3C/svg%3E");
-  -webkit-mask-size:160px;mask-size:160px}
-[data-marca="boliche"] .sello--gana{background:var(--bo-hoja)}
-[data-marca="boliche"] .sello--pierde{background:var(--bo-achiote)}
-[data-marca="boliche"] .sello--pasa{background:#6A5A4A}
+/* ─── el resultado: una franja a pantalla completa ───────────── */
+[data-marca="boliche"] .sello{
+  left:0;right:0;top:50%;width:auto;transform:translateY(-50%) scaleY(0);transform-origin:center;
+  border:0;border-radius:0;padding:clamp(18px, 4vh, 32px) 0;color:var(--bo-papel);
+  font-size:clamp(3rem, 15vw, 7rem);letter-spacing:.02em;text-transform:uppercase;line-height:.9;
+  background:linear-gradient(90deg, transparent, var(--bo-franja) 18%, var(--bo-franja) 82%, transparent);
+  box-shadow:0 0 80px var(--bo-franja);
+  -webkit-mask-image:none;mask-image:none;
+}
+[data-marca="boliche"] .sello::before,[data-marca="boliche"] .sello::after{
+  content:"";position:absolute;left:12%;right:12%;height:2px;background:linear-gradient(90deg, transparent, var(--bo-papel), transparent);opacity:.7}
+[data-marca="boliche"] .sello::before{top:6px}[data-marca="boliche"] .sello::after{bottom:6px}
+[data-marca="boliche"] .sello b{display:block;font-weight:900}
+[data-marca="boliche"] .sello small{font-family:var(--mal-display);font-size:.26em;letter-spacing:.3em;opacity:.95;margin-top:.3em}
+[data-marca="boliche"] .sello--gana{--bo-franja:rgba(63,150,60,.92)}
+[data-marca="boliche"] .sello--pierde{--bo-franja:rgba(196,52,38,.92)}
+[data-marca="boliche"] .sello--pasa{--bo-franja:rgba(90,70,55,.92)}
+[data-marca="boliche"] .sello.ve{animation:bo-franja 2.2s cubic-bezier(.2,.9,.3,1) both}
+@keyframes bo-franja{
+  0%{opacity:0;transform:translateY(-50%) scaleY(0)}
+  12%{opacity:1;transform:translateY(-50%) scaleY(1)}
+  82%{opacity:1;transform:translateY(-50%) scaleY(1)}
+  100%{opacity:0;transform:translateY(-54%) scaleY(1)}}
+/* el texto entra un poco después, con un estirón */
+[data-marca="boliche"] .sello.ve > *{animation:bo-franja-texto 2.2s cubic-bezier(.2,1.2,.3,1) both}
+@keyframes bo-franja-texto{0%,10%{opacity:0;letter-spacing:.3em;filter:blur(6px)}30%{opacity:1;letter-spacing:.02em;filter:blur(0)}100%{opacity:1}}
 
-/* ─── el resto ────────────────────────────────────────────── */
-[data-marca="boliche"] .capa{background:color-mix(in srgb, var(--bo-noche) 55%, transparent)}
-[data-marca="boliche"] .escena::after{box-shadow:inset 0 0 120px 24px rgba(242,179,61,.42)}
-[data-marca="boliche"] .toast{font-family:var(--mal-display);font-weight:700;background:var(--bo-papel);color:var(--bo-tinta);
-  border:3px solid var(--bo-tinta);border-radius:12px;box-shadow:0 4px 0 #120A07}
+/* ─── el tiempo de la gritadera: la línea de arriba del panel se consume,
+   de maíz a rojo, de izquierda a derecha ── */
+[data-marca="boliche"] #m-gente{--tiempo:1}
+[data-marca="boliche"] #m-gente::before{
+  left:0;right:0;top:0;width:auto;height:3px;border-radius:0 0 3px 3px;
+  background:linear-gradient(90deg, var(--bo-achiote), var(--bo-maiz));
+  transform-origin:left;transform:scaleX(var(--tiempo));transition:transform .25s linear;
+  box-shadow:0 0 12px rgba(247,185,67,.6);
+}
 
-/* el resultado y la plata en la mesa, del color de su bando */
-[data-marca="boliche"] #fin-suma[data-bando="pares"]{color:var(--bo-canica)}
-[data-marca="boliche"] #fin-suma[data-bando="nones"]{color:#C88BDA}
-[data-marca="boliche"] #fin-suma small{color:var(--ref-t2)}
-[data-marca="boliche"] #en-mesa{color:var(--bo-maiz)}
-[data-marca="boliche"] #reloj-gente{background:var(--bo-maiz)}
+/* ─── las esquinas del HUD: marcas de encuadre, como una cámara ── */
+[data-marca="boliche"] .hud-juego{--esq:18px}
+[data-marca="boliche"] .hud-juego::before,[data-marca="boliche"] .hud-juego::after{
+  content:"";position:absolute;width:var(--esq);height:var(--esq);pointer-events:none;opacity:.55;
+  border:2px solid var(--bo-maiz);
+}
+[data-marca="boliche"] .hud-juego::before{left:12px;bottom:12px;border-top:0;border-right:0;border-radius:0 0 0 6px}
+[data-marca="boliche"] .hud-juego::after{right:12px;bottom:12px;border-top:0;border-left:0;border-radius:0 0 6px 0}
 
-/* La portada sigue cabiendo con los banderines encima: el panel deja el
-   hueco de arriba, y es el cuerpo —no el panel— el que se desplaza. */
-[data-marca="boliche"] .capa{padding-top:calc(var(--mal-e4) + 14px)}
-/* la fila de la capa mide lo que hay de alto —no lo que mide el panel—,
-   para que el `max-height` del panel sí lo limite */
+/* ─── el resto ───────────────────────────────────────────────── */
+[data-marca="boliche"] .capa{background:rgba(20,12,9,.55);-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px)}
+[data-marca="boliche"] .toast{font-family:var(--mal-display);font-weight:700;background:rgba(20,12,9,.9);color:var(--bo-papel);
+  border:1px solid rgba(255,246,230,.25);border-radius:999px;box-shadow:0 10px 30px rgba(0,0,0,.5)}
+[data-marca="boliche"] #fin-suma[data-bando="pares"]{color:var(--bo-canica-2);text-shadow:0 0 16px rgba(88,185,240,.5)}
+[data-marca="boliche"] #fin-suma[data-bando="nones"]{color:var(--bo-colada-2);text-shadow:0 0 16px rgba(154,75,176,.6)}
+[data-marca="boliche"] #fin-suma small{color:var(--ref-t2);text-shadow:none}
+[data-marca="boliche"] .pista i{background:rgba(255,246,230,.95);box-shadow:0 0 0 6px rgba(247,185,67,.45), 0 0 24px rgba(247,185,67,.6)}
+
+/* la portada sigue cabiendo: el cuerpo se desplaza, no el panel */
 [data-marca="boliche"] .capa{grid-template-rows:minmax(0, 1fr)}
 [data-marca="boliche"] .portada{max-height:100%;align-self:center}
 [data-marca="boliche"] .portada__cuerpo{flex:1 1 auto;min-height:0}
 [data-marca="boliche"] .portada__pie{flex:none}
 @media (orientation:landscape) and (max-height:520px){
-  [data-marca="boliche"] .portada h1{font-size:1.9rem;text-shadow:2px 2px 0 var(--bo-achiote), 4px 4px 0 var(--bo-tinta)}
+  [data-marca="boliche"] .portada h1{font-size:1.6rem}
   [data-marca="boliche"] .portada__pie .caption{display:none}
+}
+@media (prefers-reduced-motion:reduce){
+  [data-marca="boliche"] .btn--rojo::after{animation:none}
+  [data-marca="boliche"] .sello.ve,[data-marca="boliche"] .sello.ve > *{animation:none;opacity:1;transform:translateY(-50%);filter:none;letter-spacing:.02em}
 }
