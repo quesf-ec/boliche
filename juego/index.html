@@ -791,21 +791,34 @@ const plateado = new THREE.MeshStandardMaterial({ color: 0xe4e1d8, metalness: .3
 const monedaGeo = new THREE.CylinderGeometry(.034, .034, .006, 24);
 /* Una pila por jugador, en el borde, delante de cada uno. */
 const pilas = new Map();
+/* Las pilas crecen hacia afuera del borde y hacia el costado de su
+   dueño, nunca hacia adentro: así no tapan la tina. La de la banca va al
+   costado de quien la tenga, fuera del borde, en el piso. */
 function pila(quien) {
   if (!pilas.has(quien)) {
     const g = new THREE.Group(), a = quien.angulo;
-    const r = esc.radioMonedas + (quien === BANCA ? .01 : 0);
-    g.position.set(Math.cos(a) * r + (quien === BANCA ? .22 : 0), esc.yMonedas, Math.sin(a) * r);
-    g.userData.n = 0; escena.add(g); pilas.set(quien, g);
+    const ux = Math.cos(a), uz = Math.sin(a), tx = -uz, tz = ux;   // hacia afuera, y de costado
+    const deBanca = quien === caja();
+    const r = deBanca ? 1.2 : esc.radioMonedas;
+    const lado = deBanca ? .3 : 0;
+    g.position.set(ux * r + tx * lado, deBanca ? esc.pisoY + .003 : esc.yMonedas, uz * r + tz * lado);
+    g.userData = { n: 0, ux, uz, tx, tz, deBanca };
+    escena.add(g); pilas.set(quien, g);
   }
   return pilas.get(quien);
 }
 function ponerEn(quien, n) {
-  const g = pila(quien);
+  const g = pila(quien), u = g.userData;
   for (let i = 0; i < n; i++) {
+    const k = u.n++;
+    if (k >= 48) continue;                 // de ahí para arriba ya no se dibuja: no cabe
     const m = new THREE.Mesh(monedaGeo, plateado);
-    const k = g.userData.n++;
-    m.position.set((k % 3 - 1) * .07 * (k > 5 ? 1 : 0) + (Math.random() - .5) * .006, .003 + (k % 6) * .0065, Math.floor(k / 6) * .075);
+    // columnas de seis; las columnas se reparten de costado (0, +1, -1, +2) y luego hacia afuera
+    const col = Math.floor(k / 6), alto = k % 6;
+    const lado = [0, 1, -1, 2][col % 4] * .072 * (u.deBanca ? 1 : .9);
+    const fuera = Math.floor(col / 4) * .072;
+    const j = (Math.random() - .5) * .006;
+    m.position.set(u.tx * lado + u.ux * fuera + j, .003 + alto * .0065, u.tz * lado + u.uz * fuera + j);
     m.rotation.y = Math.random();
     m.castShadow = true; g.add(m);
   }
@@ -1631,6 +1644,7 @@ $('b-ser-banca').addEventListener('click', () => {
   $('c-quiebra').hidden = true;
   if (est.eresBanca) { est.eresBanca = false; est.banca = BANCA_INICIAL; if (est.saldo < INICIAL) est.saldo = INICIAL; }
   else { est.eresBanca = true; est.banca = est.saldo; est.saldo = 0; BANCA.plata = Math.max(BANCA.plata, PLATA_VECINO['Don Segundo']); }
+  for (const g of pilas.values()) escena.remove(g); pilas.clear();   // la pila de la banca cambia de dueño y de sitio
   guardar(); pintar(); nuevaRonda();
 });
 $('b-otra').addEventListener('click', () => { if (revisarPlata()) nuevaRonda(); });
