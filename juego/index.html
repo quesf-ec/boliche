@@ -11,7 +11,7 @@
 <link rel="preload" href="https://franciscombp.github.io/ds/fonts/montserrat.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="preload" href="https://franciscombp.github.io/ds/fonts/inter.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="modulepreload" href="three.module.min.js">
-<link rel="stylesheet" href="https://franciscombp.github.io/ds/mal/mal.css?v=1.0.21">
+<link rel="stylesheet" href="https://franciscombp.github.io/ds/mal/mal.css?v=1.0.22">
 <style>
 /* Solo el lienzo, los globos de lo que grita la gente y la mano de
    monedas: todo lo demás —.hud-juego, .marcador, .chip, .boton-juego,
@@ -442,7 +442,7 @@ body{-webkit-touch-callout:none}
               <button class="chip" type="button" data-escenario="plaza" aria-pressed="false">Plaza</button>
               <button class="chip" type="button" data-escenario="tienda" aria-pressed="false">Tienda</button>
             </div>
-            <p class="expl__x">Empiezas con <b>cinco dólares</b> de mentira, que se guardan en este navegador. Cada ronda y cada logro te dan <b>sucres</b> para <a href="https://quesf-ec.github.io/Perfil/" target="_top">tu perfil</a>.</p>
+            <p class="expl__x">Empiezas con <b>cinco dólares</b> de mentira, que se guardan en este navegador. Cada ronda y cada logro te dan <b>sucres</b> para <a href="https://quesf-ec.github.io/perfil/" target="_top">tu perfil</a>.</p>
           </section>
         </div>
       </div>
@@ -482,12 +482,12 @@ body{-webkit-touch-callout:none}
 </main>
 
 <script src="tina.js?v=8"></script>
-<script src="https://franciscombp.github.io/ds/mal/mal.js?v=1.0.21" defer></script>
+<script src="https://franciscombp.github.io/ds/mal/mal.js?v=1.0.22" defer></script>
 <script type="module">
 import * as THREE from './three.module.min.js';
 import { Persona } from './gente.js?v=2';
 import { construir as construirEscenario, ESCENARIOS } from './escenarios.js?v=3';
-import * as perfil from '../../Perfil/perfil.js?v=3';
+import * as perfil from '../../perfil/perfil.js?v=3';
 
 const $ = id => document.getElementById(id);
 const lienzo = $('tina');
