@@ -1,0 +1,54 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <!-- El boliche: la hondonada de cemento vista desde arriba, el
+       agujero redondo con su aro de lata (pares), la cajita cuadrada
+       (nones), el tope de madera y las canicas celeste y blanca. Todo
+       dentro de la zona segura maskable (80% central). -->
+  <defs>
+    <radialGradient id="fondo" cx="50%" cy="30%" r="80%">
+      <stop offset="0%" stop-color="#3a2f44"/>
+      <stop offset="100%" stop-color="#1d1822"/>
+    </radialGradient>
+    <radialGradient id="cono" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#6f6a62"/>
+      <stop offset="45%" stop-color="#8f8a81"/>
+      <stop offset="92%" stop-color="#b3aea4"/>
+      <stop offset="100%" stop-color="#8a857c"/>
+    </radialGradient>
+    <radialGradient id="celeste" cx="35%" cy="30%" r="70%">
+      <stop offset="0%" stop-color="#d8f1ff"/>
+      <stop offset="50%" stop-color="#5fb4e6"/>
+      <stop offset="100%" stop-color="#1f5f92"/>
+    </radialGradient>
+    <radialGradient id="blanca" cx="35%" cy="30%" r="70%">
+      <stop offset="0%" stop-color="#ffffff"/>
+      <stop offset="55%" stop-color="#e6e4ea"/>
+      <stop offset="100%" stop-color="#8e8a99"/>
+    </radialGradient>
+  </defs>
+
+  <rect width="512" height="512" rx="116" fill="url(#fondo)"/>
+
+  <!-- el piso y la hondonada -->
+  <circle cx="256" cy="256" r="186" fill="#a9a49b"/>
+  <circle cx="256" cy="256" r="164" fill="url(#cono)"/>
+  <circle cx="256" cy="256" r="164" fill="none" stroke="#5a554e" stroke-opacity=".5" stroke-width="3"/>
+
+  <!-- el redondo, pares -->
+  <circle cx="283" cy="258" r="25" fill="#0b0909"/>
+  <circle cx="283" cy="258" r="27" fill="none" stroke="#c9c6be" stroke-width="5"/>
+  <!-- la cajita, nones -->
+  <rect x="207" y="236" width="34" height="34" fill="#0b0909" stroke="#b4834f" stroke-width="5"/>
+  <!-- el tope -->
+  <rect x="268" y="292" width="64" height="16" rx="2" fill="#b4834f" transform="rotate(-34 300 300)"/>
+
+  <!-- las canicas -->
+  <ellipse cx="179" cy="337" rx="21" ry="17" fill="#1d1010" opacity=".35"/>
+  <circle cx="173" cy="330" r="21" fill="url(#celeste)"/>
+  <circle cx="166" cy="322" r="5" fill="#fff" opacity=".85"/>
+  <ellipse cx="337" cy="183" rx="21" ry="17" fill="#1d1010" opacity=".35"/>
+  <circle cx="331" cy="176" r="21" fill="url(#blanca)"/>
+  <circle cx="324" cy="168" r="5" fill="#fff" opacity=".85"/>
+  <ellipse cx="231" cy="171" rx="17" ry="14" fill="#1d1010" opacity=".3"/>
+  <circle cx="226" cy="165" r="17" fill="url(#celeste)"/>
+  <circle cx="220" cy="159" r="4" fill="#fff" opacity=".85"/>
+</svg>

@@ -6,12 +6,12 @@
 <title>El boliche · Finados en la Sierra</title>
 <meta name="description" content="El boliche de Guano y Píllaro, en 3D: la gente grita pares o nones, la banca decide, tú pones tu moneda o pasas, y ocho canicas ruedan por la tina hasta caer en los dos agujeros. Si en cada uno quedan pares, pares; si quedan impares, nones.">
 <meta name="theme-color" content="#1B110D">
-<link rel="canonical" href="https://una.red/apps/boliche/juego/">
-<link rel="icon" href="../../../img/icono-boliche.svg" type="image/svg+xml">
-<link rel="preload" href="../../../ds/fonts/montserrat.woff2" as="font" type="font/woff2" crossorigin>
-<link rel="preload" href="../../../ds/fonts/inter.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="canonical" href="https://quesf-ec.github.io/boliche/juego/">
+<link rel="icon" href="../img/icono-boliche.svg" type="image/svg+xml">
+<link rel="preload" href="https://franciscombp.github.io/ds/fonts/montserrat.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="https://franciscombp.github.io/ds/fonts/inter.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="modulepreload" href="three.module.min.js">
-<link rel="stylesheet" href="../../../ds/mal/mal.css?v=1.0.20">
+<link rel="stylesheet" href="https://franciscombp.github.io/ds/mal/mal.css?v=1.0.20">
 <style>
 /* Solo el lienzo, los globos de lo que grita la gente y la mano de
    monedas: todo lo demás —.hud-juego, .marcador, .chip, .boton-juego,
@@ -269,10 +269,10 @@ body{-webkit-touch-callout:none}
 {
  "@context": "https://schema.org",
  "@type": "VideoGame",
- "@id": "https://una.red/apps/boliche/juego/#juego",
+ "@id": "https://quesf-ec.github.io/boliche/juego/#juego",
  "name": "El boliche",
  "description": "El boliche de Guano y Píllaro, en 3D: la gente grita pares o nones, la banca decide, tú pones tu moneda o pasas, y ocho canicas ruedan por la tina hasta caer en los dos agujeros. Si en cada uno quedan pares, pares; si quedan impares, nones.",
- "url": "https://una.red/apps/boliche/juego/",
+ "url": "https://quesf-ec.github.io/boliche/juego/",
  "inLanguage": "es",
  "applicationCategory": "GameApplication",
  "operatingSystem": "Web",
@@ -442,7 +442,7 @@ body{-webkit-touch-callout:none}
               <button class="chip" type="button" data-escenario="plaza" aria-pressed="false">Plaza</button>
               <button class="chip" type="button" data-escenario="tienda" aria-pressed="false">Tienda</button>
             </div>
-            <p class="expl__x">Empiezas con <b>cinco dólares</b> de mentira, que se guardan en este navegador. Cada ronda y cada logro te dan <b>sucres</b> para <a href="../../../perfil/" target="_top">tu perfil</a>.</p>
+            <p class="expl__x">Empiezas con <b>cinco dólares</b> de mentira, que se guardan en este navegador. Cada ronda y cada logro te dan <b>sucres</b> para <a href="https://quesf-ec.github.io/Perfil/" target="_top">tu perfil</a>.</p>
           </section>
         </div>
       </div>
@@ -482,12 +482,12 @@ body{-webkit-touch-callout:none}
 </main>
 
 <script src="tina.js?v=8"></script>
-<script src="../../../ds/mal/mal.js?v=1.0.20" defer></script>
+<script src="https://franciscombp.github.io/ds/mal/mal.js?v=1.0.20" defer></script>
 <script type="module">
 import * as THREE from './three.module.min.js';
 import { Persona } from './gente.js?v=2';
 import { construir as construirEscenario, ESCENARIOS } from './escenarios.js?v=3';
-import * as perfil from '../../../perfil/perfil.js?v=3';
+import * as perfil from '../../Perfil/perfil.js?v=3';
 
 const $ = id => document.getElementById(id);
 const lienzo = $('tina');
