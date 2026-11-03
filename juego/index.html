@@ -85,6 +85,17 @@ body{margin:0;overflow:hidden;overscroll-behavior:none;-webkit-user-select:none;
   border:inherit;border-width:0 2px 2px 0;transform:translate(-50%, -55%) rotate(45deg)}
 .globo.ve{opacity:1;animation:globo .25s var(--mal-ease, ease)}
 .globo--banca{background:#ffc93c}
+/* a cuánto va la banca: cuatro botones iguales */
+.tantos{display:grid;grid-template-columns:repeat(4,1fr);gap:var(--mal-e2)}
+.tanto{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;min-height:56px;padding:.3rem .1rem;border-radius:14px;min-width:0}
+.tanto b{font-size:1.25rem;line-height:1}
+.tanto small{font-size:var(--mal-t-micro);letter-spacing:0;text-transform:none;white-space:nowrap}
+.tanto[data-tanto="3"],.tanto[data-tanto="4"]{box-shadow:inset 0 0 0 2px #9A4BB0}
+/* cómo quedó cada uno al final */
+.final-lista{list-style:none;margin:0;padding:0;display:grid;gap:4px;font-variant-numeric:tabular-nums}
+.final-lista li{display:flex;justify-content:space-between;gap:var(--mal-e2);padding:.35rem .6rem;border-radius:8px;background:rgba(255,255,255,.06)}
+.final-lista li.tu{background:rgba(242,179,61,.22);font-weight:700}
+.final-lista li b{font-family:var(--mal-mono)}
 .globo--tu{background:#ff77ab}
 .globo small{display:block;font-weight:500;font-size:.68rem;opacity:.7}
 /* el globo sale como un grito: crece de más, tiembla y se asienta */
@@ -211,6 +222,7 @@ body{-webkit-touch-callout:none}
 .etiqueta.pasa{opacity:.55}
 .etiqueta.gana{box-shadow:0 0 0 3px #5FC25A, 0 0 16px rgba(95,194,90,.6)}
 .etiqueta.pierde{opacity:.6}
+.etiqueta.fuera{opacity:.35;filter:grayscale(1)}
 .etiqueta__nombre{font:800 .62rem/1 var(--mal-display);letter-spacing:.04em;text-transform:uppercase;color:#FFF6E6}
 .etiqueta__plata{font:900 .78rem/1 var(--mal-display);color:#F7B943;font-variant-numeric:tabular-nums}
 .etiqueta__plata.poca{color:#FF7A66}
@@ -220,7 +232,6 @@ body{-webkit-touch-callout:none}
 .etiqueta__ficha[data-modo="doble"]{background:#9A4BB0;color:#fff}
 .etiqueta__ficha[data-modo="todo"]{background:#F0513F;color:#fff;animation:latir .7s ease-in-out infinite}
 @keyframes latir{50%{transform:scale(1.15)}}
-.etiqueta.banca .etiqueta__nombre{color:#F7B943}
 /* ─── el tira y afloja ─── */
 .cuerda{display:grid;grid-template-columns:auto 1fr auto;align-items:center;gap:10px;
   font:900 .8rem/1 var(--mal-display);letter-spacing:.02em;font-variant-numeric:tabular-nums}
@@ -344,6 +355,22 @@ body{-webkit-touch-callout:none}
         <p class="caption" id="gente-nota">Toca rápido para jalar: la banca va para donde quede el nudo.</p>
       </section>
 
+      <!-- 1b · Si la banca eres tú: ¿a cuánto va? -->
+      <section class="vidrio pila mesa" id="m-tanto" hidden aria-label="A cuánto va la banca">
+        <div class="mesa__linea">
+          <p class="kicker" id="tanto-vamos">Vamos por pares</p>
+          <p class="micro" id="tanto-banca"></p>
+        </div>
+        <p class="mesa__dice">«¿A cuánto va la banca?»</p>
+        <p class="caption">Cada moneda en la mesa vale eso: si sale lo de la gente, pagas eso; si no, ellos lo pierden. Más alto, más rápido los quiebras… o te quiebran.</p>
+        <div class="tantos" role="group" aria-label="A cuánto va la banca">
+          <button class="btn tanto" type="button" data-tanto="1"><b>×1</b><small>Sencillo</small></button>
+          <button class="btn tanto" type="button" data-tanto="2"><b>×2</b><small>Doble</small></button>
+          <button class="btn tanto" type="button" data-tanto="3"><b>×3</b><small>Triple</small></button>
+          <button class="btn tanto" type="button" data-tanto="4"><b>×4</b><small>Cuádruple</small></button>
+        </div>
+      </section>
+
       <!-- 2 · ¿Va a jugar o no? -->
       <section class="vidrio pila mesa" id="m-apuesta" hidden aria-label="Tu apuesta">
         <div class="mesa__linea">
@@ -422,7 +449,7 @@ body{-webkit-touch-callout:none}
           <section class="expl" data-paso="1" hidden aria-label="Paso 2 de 5">
             <svg class="expl__dibujo" viewBox="0 0 220 120" aria-hidden="true"><circle cx="110" cy="40" r="13" fill="#B97D55" stroke="#24150F" stroke-width="2"/><circle cx="106" cy="38" r="1.6" fill="#24150F"/><circle cx="114" cy="38" r="1.6" fill="#24150F"/><ellipse cx="110" cy="45" rx="3.5" ry="3" fill="#24150F"/><path d="M93 70 Q110 48 127 70Z" fill="#5A1A1A" stroke="#24150F" stroke-width="2"/><ellipse cx="110" cy="30" rx="17" ry="3.5" fill="#24150F"/><rect x="102" y="19" width="16" height="11" rx="2" fill="#24150F"/><rect x="64.0" y="-1" width="92" height="20" rx="10" fill="#F2B33D" stroke="#24150F" stroke-width="2"/><path d="M106 18 L110 25 L114 18" fill="#F2B33D" stroke="#24150F" stroke-width="2"/><text x="110" y="13.5" text-anchor="middle" font-family="Montserrat,Arial Black,sans-serif" font-weight="900" font-size="9" fill="#24150F">¿VA A JUGAR O NO?</text><ellipse cx="60" cy="98" rx="16" ry="6" fill="#D9D5CB" stroke="#24150F" stroke-width="2"/><ellipse cx="60" cy="96" rx="16" ry="6" fill="#F4F1EA" stroke="#24150F" stroke-width="2"/><ellipse cx="60" cy="91" rx="16" ry="6" fill="#D9D5CB" stroke="#24150F" stroke-width="2"/><ellipse cx="60" cy="89" rx="16" ry="6" fill="#F4F1EA" stroke="#24150F" stroke-width="2"/><ellipse cx="60" cy="84" rx="16" ry="6" fill="#D9D5CB" stroke="#24150F" stroke-width="2"/><ellipse cx="60" cy="82" rx="16" ry="6" fill="#F4F1EA" stroke="#24150F" stroke-width="2"/><text x="60" y="117" text-anchor="middle" font-family="Montserrat,sans-serif" font-weight="900" font-size="9" fill="#F2B33D">$0,75</text><rect x="112" y="78" width="44" height="22" rx="8" fill="#F2B33D" stroke="#24150F" stroke-width="2"/><text x="134" y="93" text-anchor="middle" font-family="Montserrat,sans-serif" font-weight="900" font-size="9" fill="#24150F">JUEGO</text><rect x="162" y="78" width="44" height="22" rx="8" fill="#F6EBD3" stroke="#24150F" stroke-width="2"/><text x="184" y="93" text-anchor="middle" font-family="Montserrat,sans-serif" font-weight="900" font-size="9" fill="#24150F">PASO</text></svg>
             <h2 class="expl__t"><span class="expl__n">2</span> ¿Va a jugar o no?</h2>
-            <p class="expl__x">Si tú querías lo otro, igual puedes entrar. <b>Pon tus monedas</b> y di «Juego», o pasa. Los vecinos a veces <b>doblan</b> o van <b>con todo</b>: si quiebran a la banca, la banca pasa a ser tuya.</p>
+            <p class="expl__x">Si tú querías lo otro, igual puedes entrar. <b>Pon tus monedas</b> y di «Juego», o pasa. Los vecinos a veces <b>doblan</b> o van <b>con todo</b>. Si quiebran a la banca, la agarra <b>el que tenga más plata</b>. Si eres tú, escoges si pagas <b>sencillo, doble o triple</b>: así también los quiebras.</p>
           </section>
           <section class="expl" data-paso="2" hidden aria-label="Paso 3 de 5">
             <svg class="expl__dibujo" viewBox="0 0 220 120" aria-hidden="true"><ellipse cx="110" cy="62" rx="98" ry="52" fill="#B8B2A6" stroke="#24150F" stroke-width="2.5"/><ellipse cx="110" cy="64" rx="80" ry="40" fill="#9C968B"/><ellipse cx="110" cy="68" rx="52" ry="24" fill="#857F75"/><path d="M58 40 C 20 60, 60 104, 120 98 S 170 70, 128 66" fill="none" stroke="#F2B33D" stroke-width="2.5" stroke-dasharray="5 5"/><circle cx="99" cy="70" r="9" fill="#24150F" stroke="#C9C6BE" stroke-width="2.5"/><rect x="113" y="61" width="17" height="17" fill="#24150F" stroke="#A8763F" stroke-width="2.5"/><rect x="111" y="40" width="4" height="15" fill="#A4532E"/><circle cx="58" cy="40" r="7" fill="#5FB4E6" stroke="#24150F" stroke-width="1.5"/><circle cx="56" cy="37.5" r="2" fill="#fff" opacity=".85"/><circle cx="40" cy="62" r="7" fill="#F6EBD3" stroke="#24150F" stroke-width="1.5"/><circle cx="38" cy="59.5" r="2" fill="#fff" opacity=".85"/><circle cx="150" cy="92" r="7" fill="#5FB4E6" stroke="#24150F" stroke-width="1.5"/><circle cx="148" cy="89.5" r="2" fill="#fff" opacity=".85"/><circle cx="172" cy="66" r="7" fill="#F6EBD3" stroke="#24150F" stroke-width="1.5"/><circle cx="170" cy="63.5" r="2" fill="#fff" opacity=".85"/><circle cx="80" cy="98" r="7" fill="#F6EBD3" stroke="#24150F" stroke-width="1.5"/><circle cx="78" cy="95.5" r="2" fill="#fff" opacity=".85"/><circle cx="128" cy="66" r="7" fill="#5FB4E6" stroke="#24150F" stroke-width="1.5"/><circle cx="126" cy="63.5" r="2" fill="#fff" opacity=".85"/></svg>
@@ -442,7 +469,7 @@ body{-webkit-touch-callout:none}
               <button class="chip" type="button" data-escenario="plaza" aria-pressed="false">Plaza</button>
               <button class="chip" type="button" data-escenario="tienda" aria-pressed="false">Tienda</button>
             </div>
-            <p class="expl__x">Empiezas con <b>cinco dólares</b> de mentira, que se guardan en este navegador. Cada ronda y cada logro te dan <b>sucres</b> para <a href="https://quesf-ec.github.io/perfil/" target="_top">tu perfil</a>.</p>
+            <p class="expl__x">Empiezas con <b>cinco dólares</b> de mentira, que se guardan en este navegador. Si te quedas limpio te fían <b>una sola vez</b>; después puedes cambiar <b>10 sucres</b> de <a href="https://quesf-ec.github.io/perfil/" target="_top">tu perfil</a> por cinco dólares. Cuando ya muchos se quedaron limpios, <b>se acaba el juego</b>.</p>
           </section>
         </div>
       </div>
@@ -474,9 +501,24 @@ body{-webkit-touch-callout:none}
     <div class="vidrio pila capa__panel">
       <p class="kicker">Te quedaste limpio</p>
       <h2>Ni para una peseta.</h2>
-      <p class="caption">La banca te fía otros cinco dólares. Para el próximo Finados se los devuelves, con guagua de pan.</p>
+      <p class="caption" id="limpio-x">La banca te fía cinco dólares, pero una sola vez.</p>
       <button class="btn btn--rojo boton-juego btn-block" id="b-fiado" type="button">
         <svg class="icono" aria-hidden="true"><use href="#i-billete"/></svg> Aceptar el fiado</button>
+      <button class="btn btn-block" id="b-sucres" type="button">Cambiar 10 sucres por $5,00</button>
+      <p class="micro" id="limpio-sucres"></p>
+      <button class="btn btn-ghost btn-block" id="b-me-voy" type="button">Me voy a la casa</button>
+    </div>
+  </div>
+
+  <!-- Se acabó el boliche -->
+  <div class="capa" id="c-final" hidden>
+    <div class="vidrio pila capa__panel" role="dialog" aria-labelledby="final-t">
+      <p class="kicker">Se acabó el boliche</p>
+      <h2 id="final-t">Ya casi nadie tiene plata.</h2>
+      <p class="caption" id="final-x"></p>
+      <ol class="final-lista" id="final-lista"></ol>
+      <button class="btn btn--rojo boton-juego btn-block" id="b-nuevo" type="button">
+        <svg class="icono" aria-hidden="true"><use href="#i-reiniciar"/></svg> Juego nuevo</button>
     </div>
   </div>
 </main>
@@ -505,19 +547,24 @@ try { guardado = JSON.parse(localStorage.getItem(CLAVE)) || {}; } catch (e) {}
 const est = {
   saldo: Number.isFinite(guardado.saldo) ? guardado.saldo : INICIAL,
   banca: Number.isFinite(guardado.banca) ? guardado.banca : BANCA_INICIAL,
-  eresBanca: guardado.eresBanca === true,
+  // quién tiene la banca: 'tú' o el nombre de alguien de la tina
+  banquero: typeof guardado.banquero === 'string' ? guardado.banquero : guardado.eresBanca === true ? 'tú' : 'Don Segundo',
+  get eresBanca() { return this.banquero === 'tú'; },
+  fiado: guardado.fiado === true,   // la banca fía una sola vez
+  tanto: 1,         // cuánto vale cada moneda esta ronda: sencillo, doble, triple…
   rondasBanca: guardado.rondasBanca || 0,   // para el logro de aguantar de banca
   todo: false,
   sonido: guardado.sonido !== false,
   escenario: guardado.escenario in ESCENARIOS ? guardado.escenario : 'comunidad',
-  fase: 'inicio',   // inicio | gente | apuesta | lanzar | espera | rueda | fin
+  fase: 'inicio',   // inicio | gente | tanto | apuesta | lanzar | espera | rueda | fin | final
   quieres: null,    // lo que gritaste tú
   vamos: null,      // lo que decidió la banca
   apostado: 0,      // tus monedas en la mesa, en centavos
   juegas: false,
 };
-const guardar = () => { try { localStorage.setItem(CLAVE, JSON.stringify({ saldo: est.saldo, banca: est.banca, eresBanca: est.eresBanca, rondasBanca: est.rondasBanca, sonido: est.sonido, escenario: est.escenario,
-  vecinos: Object.fromEntries([...VECINOS, BANCA].map(v => [v.nombre, v.plata])) })); } catch (e) {} };
+const guardar = () => { try { localStorage.setItem(CLAVE, JSON.stringify({ saldo: est.saldo, banca: est.banca, banquero: est.banquero, fiado: est.fiado, rondasBanca: est.rondasBanca, sonido: est.sonido, escenario: est.escenario,
+  vecinos: Object.fromEntries(PERSONAS.map(v => [v.nombre, v.plata])),
+  fiados: PERSONAS.filter(v => v.fiado).map(v => v.nombre) })); } catch (e) {} };
 
 /* ─── sonido: WebAudio, sin archivos ───────────────────────── */
 let audio = null, ruido = null;
@@ -634,16 +681,23 @@ BANCA.angulo = ENFRENTE;
 BANCA.firme = .8; BANCA.mano = 4;
 /* La plata de cada uno: la que trae a la tina. Se guarda entre partidas. */
 const PLATA_VECINO = { 'Don Lucho': 800, 'la Mariíta': 450, 'el Kevin': 300, 'Doña Inés': 650, 'el Pato': 1000, 'Don Segundo': 500 };
-for (const v of [...VECINOS, BANCA]) {
+const PERSONAS = [...VECINOS, BANCA];
+for (const v of PERSONAS) {
   const g = guardado.vecinos && guardado.vecinos[v.nombre];
   v.plata = Number.isFinite(g) ? g : PLATA_VECINO[v.nombre];
+  v.fiado = Array.isArray(guardado.fiados) && guardado.fiados.includes(v.nombre);
 }
-/* Los que apuestan: los vecinos y, si la banca eres tú, también Don
-   Segundo, que se sienta como uno más. De dónde salen y adónde van las
-   monedas de la banca: su pila, o la tuya si la banca eres tú. */
-const gente = () => est.eresBanca ? [...VECINOS, BANCA] : VECINOS;
-const caja = () => est.eresBanca ? TU : BANCA;
 const TU = { nombre: 'tú', angulo: DELANTE };
+/* La banca la tiene uno: Don Segundo al principio; cuando se quiebra, la
+   agarra el que tenga más plata —tú o cualquiera de la tina—. Los demás
+   se sientan alrededor y apuestan. Al que se queda limpio le fían una
+   sola vez; si se vuelve a quedar limpio, ya no juega. */
+const porNombre = n => n === TU.nombre ? TU : PERSONAS.find(v => v.nombre === n) || BANCA;
+if (!est.eresBanca && !PERSONAS.some(v => v.nombre === est.banquero)) est.banquero = BANCA.nombre;
+const caja = () => porNombre(est.banquero);
+const sentados = () => PERSONAS.filter(q => q !== caja());
+const fuera = q => q.plata < FICHA && q.fiado;
+const gente = () => sentados().filter(q => !fuera(q));
 
 /* ─── la etiqueta de cada uno ─────────────────────────────── */
 /* Sobre cada figura de la tina, a sus pies: nombre, la plata que le
@@ -652,14 +706,14 @@ const corto = n => n.replace(/^(Don|Doña|la|el) /, '');
 let rondaLista = [];
 const etiqueta = new Map();
 function pintarRonda() {
-  const lista = gente();
+  const lista = sentados();
   const capa = $('etiquetas');
   if (rondaLista.length !== lista.length || rondaLista.some((q, i) => q !== lista[i])) {
     rondaLista = lista;
     capa.innerHTML = ''; etiqueta.clear();
     for (const q of lista) {
       const el = document.createElement('div');
-      el.className = 'etiqueta' + (q === BANCA ? ' banca' : '');
+      el.className = 'etiqueta';
       el.innerHTML = `<span class="etiqueta__nombre">${corto(q.nombre)}</span><span class="etiqueta__plata"></span><span class="etiqueta__ficha"></span>`;
       capa.append(el); etiqueta.set(q, el);
     }
@@ -673,6 +727,8 @@ function pintarRonda() {
     const pl = el.querySelector('.etiqueta__plata');
     pl.textContent = plata(q.plata); pl.classList.toggle('poca', q.plata < FICHA * 4);
     el.classList.toggle('pasa', est.fase !== 'gente' && !q.juega && !!est.vamos);
+    el.classList.toggle('fuera', fuera(q));
+    if (fuera(q)) pl.textContent = 'Limpio';
   }
 }
 function marcarRonda(clase, quienes) {
@@ -727,7 +783,7 @@ function grita(quien, texto, ms = 1800, sub, tono) {
     capaGlobos.append(el); globos.set(quien, el);
   }
   // los gritos fuertes —con todo, doblado— salen más grandes y en color
-  el.className = 'globo' + (quien === BANCA && !est.eresBanca ? ' globo--banca' : quien === TU ? ' globo--tu' : '') + (tono === 'fuerte' ? ' globo--fuerte' : '');
+  el.className = 'globo' + (quien === caja() && !est.eresBanca ? ' globo--banca' : quien === TU ? ' globo--tu' : '') + (tono === 'fuerte' ? ' globo--fuerte' : '');
   el.innerHTML = '';
   el.append(texto);
   if (sub) { const s = document.createElement('small'); s.textContent = sub; el.append(s); }
@@ -1064,7 +1120,7 @@ function contarCaida(e) {
     // con siete adentro, una cuenta es par y la otra impar: la última decide
     const paraPares = r.redondo % 2 ? 'el redondo' : 'la cajita';
     $('rueda-t').textContent = `¡Falta una y esa decide! Si cae en ${paraPares}, pares; si no, nones.`;
-    grita(BANCA, '¡La última decide!', 1800);
+    grita(caja(), '¡La última decide!', 1800);
     sonar('uy', .6); vibrar([25, 50, 25]);
   } else if (falta > 0 && Math.random() < .55) {
     grita(azar(VECINOS), azar([`¡${e.dentro}!`, e.hueco === 'redondo' ? '¡Otra al redondo!' : '¡Otra a la cajita!', '¡Una más!']), 900);
@@ -1088,18 +1144,18 @@ function animarGente(t, dt) {
   for (const q of [...VECINOS, BANCA]) {
     const p = q.persona;
     p.tension = tension;
-    p.mira = punto || (hablando && hablando !== q && hablando.persona ? hablando.persona.cabeza.getWorldPosition(new THREE.Vector3()) : q === BANCA ? aTi : null);
+    p.mira = punto || (hablando && hablando !== q && hablando.persona ? hablando.persona.cabeza.getWorldPosition(new THREE.Vector3()) : q === caja() ? aTi : null);
     p.actualizar(t, dt);
   }
 }
 
 /* Lo que se grita mientras ruedan. */
 function comentar(ahora) {
-  const quien = () => azar(est.eresBanca ? gente().filter(v => v.juega).concat(VECINOS).slice(0, 6) : [...VECINOS.filter(v => v.juega), BANCA]);
+  const quien = () => azar(est.eresBanca ? gente().filter(v => v.juega).concat(VECINOS).slice(0, 6) : [...gente().filter(v => v.juega), caja()]);
   if (casiCae() && ahora - ultimoUy > 1400) {
     ultimoUy = ahora;
     grita(azar(VECINOS), azar(['¡Uyyy!', '¡Ya, ya, ya!', '¡Cae, cae!', '¡Uy, casi!']), 1200);
-    if (Math.random() < .5) grita(BANCA, azar(['¡No, no, no!', '¡Sigue, sigue!']), 1100);
+    if (Math.random() < .5 && !est.eresBanca) grita(caja(), azar(['¡No, no, no!', '¡Sigue, sigue!']), 1100);
     sonar('uy', .8);
     if (restantes() === 1) $('rueda-k').textContent = '¡Casi cae la última!';
     return;
@@ -1107,7 +1163,7 @@ function comentar(ahora) {
   if (ahora - ultimoGrito > 1700 + Math.random() * 900) {
     ultimoGrito = ahora;
     const q = quien();
-    const frases = q === BANCA && !est.eresBanca
+    const frases = q === caja() && !est.eresBanca
       ? ['¡Para la casa!', '¡Sigan rodando!', '¡Despacito!']
       : ['¡Bajen, bajen!', '¡Dale, dale!', '¡Despacito, despacito!', '¡Esa celeste!', '¡Esa blanca!'];
     grita(q, azar(frases), 1300);
@@ -1118,7 +1174,7 @@ function comentar(ahora) {
 /* ─── la ronda ─────────────────────────────────────────────── */
 function mesa(cual) {
   if (cual === 'm-lanzar') $('carga-t').textContent = 'Suave · medio · duro';
-  for (const id of ['m-gente', 'm-apuesta', 'm-lanzar', 'm-rueda', 'm-fin']) $(id).hidden = id !== cual;
+  for (const id of ['m-gente', 'm-tanto', 'm-apuesta', 'm-lanzar', 'm-rueda', 'm-fin']) $(id).hidden = id !== cual;
   medir();
 }
 /* La plata no salta: cuenta hasta el nuevo valor, como un marcador. */
@@ -1138,7 +1194,7 @@ function pintar() {
   const mia = est.eresBanca ? est.banca : est.saldo;
   if (mia !== saldoVisto) pintarSaldo(saldoVisto, mia);
   else $('saldo').innerHTML = `${plata(mia)}<small>${est.eresBanca ? 'tu banca' : 'tu plata'}</small>`;
-  $('banca-plata').innerHTML = `<b>${plata(est.banca)}</b><small>la banca</small>`;
+  $('banca-plata').innerHTML = `<b>${plata(est.banca)}</b><small>${caja() === BANCA ? 'la banca' : `banca · ${corto(caja().nombre)}`}</small>`;
   $('banca-plata').hidden = est.eresBanca;
   const badge = $('apuesta-badge');
   badge.hidden = !(est.juegas && est.apostado);
@@ -1162,26 +1218,28 @@ const GRITADERA = 4.5;
 let finGente = 0, proximoVecino = 0, ultimaCuenta = 0;
 function nuevaRonda() {
   for (const b of [brilloRedondo, brilloCajita]) b.userData.encendido = false;
-  for (const q of [...gente(), est.eresBanca ? null : TU].filter(Boolean)) vaciar(q);
+  for (const q of [...sentados(), est.eresBanca ? null : TU].filter(Boolean)) vaciar(q);
   if (pila(caja()).userData.n < 6) ponerEn(caja(), 10 - pila(caja()).userData.n);
   est.quieres = null; est.vamos = null; est.apostado = 0; est.juegas = false; gritos = 0;
   est.jalon = 0; combo = 0; ultimaCuenta = 0; $('combo').textContent = '';
-  for (const v of [...VECINOS, BANCA]) { v.quiere = Math.random() < .5 ? 'pares' : 'nones'; v.juega = false; v.apuesta = 0; v.modo = ''; }
-  // al que se quedó limpio le fían algo para que siga jugando
-  for (const v of gente()) if (v.plata < FICHA) { v.plata = 300; setTimeout(() => grita(v, '¡Me fiaron tres dólares!', 1600), 600); }
+  est.tanto = 1;
+  for (const v of PERSONAS) { v.quiere = Math.random() < .5 ? 'pares' : 'nones'; v.juega = false; v.apuesta = 0; v.modo = ''; }
+  // al que se quedó limpio le fían algo para que siga jugando, pero una sola vez
+  for (const v of sentados()) if (v.plata < FICHA && !v.fiado) { v.plata = 300; v.fiado = true; setTimeout(() => grita(v, '¡Me fiaron tres dólares!', 1600), 600); }
   guardar();
+  if (seAcabo()) return;
   // si la banca eres tú, no gritas: escuchas, y vas por lo que pida la mayoría
   $('gritos').hidden = est.eresBanca;
   $('gente-nota').textContent = est.eresBanca
     ? 'Eres la banca: la gente jala la cuerda y tú vas para donde quede el nudo. Ellos intentan quebrarte.'
     : 'Toca rápido para jalar: la banca va para donde quede el nudo.';
   vista.objetivo = 0; lenta = 1;
-  enLaMano(ENFRENTE);
+  enLaMano(est.eresBanca ? ENFRENTE : caja().angulo);
   finGente = performance.now() + GRITADERA * 1000; proximoVecino = .3;
   est.fase = 'gente'; mesa('m-gente');
   marcarRonda('gana', []); marcarRonda('pierde', []);
   contar(); pintar();
-  grita(est.eresBanca ? TU : BANCA, '¡Ya, ya! ¿Pares o nones?', 2200);
+  grita(caja(), '¡Ya, ya! ¿Pares o nones?', 2200);
   sonar('gente', .5);
 }
 function contar() {
@@ -1278,16 +1336,52 @@ function decideBanca() {
   const empate = Math.abs(est.jalon) <= .02;
   // los que quedaron del lado del nudo quieren eso; los demás, lo suyo
   for (const v of gente()) if (Math.abs(est.jalon) > .6) v.quiere = est.vamos;
-  est.fase = 'apuesta';
-  grita(est.eresBanca ? TU : BANCA, empate ? `Empate… escojo yo: ¡${est.vamos}!` : `¡Vamos por ${est.vamos}!`, 2200);
+  grita(caja(), empate ? `Empate… escojo yo: ¡${est.vamos}!` : `¡Vamos por ${est.vamos}!`, 2200);
   sonar('gente', .7);
+  // si la banca eres tú, escoges a cuánto va: más alto, más rápido quiebras… o te quiebran
+  if (est.eresBanca) {
+    est.fase = 'tanto';
+    $('tanto-vamos').textContent = `Vamos por ${est.vamos}`;
+    $('tanto-banca').textContent = `Tu banca ${plata(est.banca)}`;
+    mesa('m-tanto');
+    return;
+  }
+  // las otras bancas casi siempre van sencillo, pero a veces se animan
+  const r = Math.random();
+  est.tanto = r < .65 ? 1 : r < .87 ? 2 : r < .97 ? 3 : 4;
+  if (est.tanto > 1) setTimeout(() => { if (est.fase === 'apuesta') grita(caja(), `¡Va ${TANTOS[est.tanto].nombre.toLowerCase()}!`, 1800, null, 'fuerte'); }, 1100);
+  apuestan();
+}
+
+/* A cuánto va la banca: cada moneda en la mesa vale por una, por dos, por
+   tres… Si sale lo de la gente, la banca paga eso; si no, la gente lo
+   pierde. Con el tanto alto la gente se tienta y va con todo. */
+const TANTOS = {
+  1: { nombre: 'Sencillo', dice: 'paga el doble' },
+  2: { nombre: 'Doble', dice: 'cada moneda vale por dos' },
+  3: { nombre: 'Triple', dice: 'cada moneda vale por tres' },
+  4: { nombre: 'Cuádruple', dice: 'cada moneda vale por cuatro' },
+};
+function escogerTanto(n) {
+  if (est.fase !== 'tanto') return;
+  est.tanto = n;
+  grita(TU, n === 1 ? '¡Sencillo nomás!' : `¡Va ${TANTOS[n].nombre.toLowerCase()}!`, 1600, null, n > 1 ? 'fuerte' : '');
+  if (n > 1) { sonar('uy', .5); vibrar(15); }
+  apuestan();
+}
+
+/* Los vecinos que querían eso apuestan; los otros a veces entran por no
+   quedarse afuera, y a veces pasan. */
+function apuestan() {
+  est.fase = 'apuesta';
+  const t = est.tanto;
   // los vecinos ponen lo suyo, de a poco; contra ti apuestan más, a ver si te quiebran
   const lista = gente();
   let puesto = 0;
   lista.forEach((v, i) => setTimeout(() => {
     if (est.fase !== 'apuesta') return;
     const quiere = v.quiere === est.vamos;
-    v.juega = (quiere || Math.random() < .45) && v.plata >= FICHA;
+    v.juega = (quiere || Math.random() < .45 + .08 * (t - 1)) && v.plata >= FICHA;
     v.modo = '';
     if (!v.juega) { grita(v, v.plata < FICHA ? 'Estoy limpio' : 'Yo paso', 1200); pintarRonda(); return; }
     const mano = est.eresBanca ? v.mano + 2 : v.mano;
@@ -1295,12 +1389,15 @@ function decideBanca() {
     v.apuesta = quiere ? 1 + Math.floor(Math.random() * mano) : 1;
     /* Los animados: a veces doblan (ponen el doble, y la banca les paga el
        doble de eso) y a veces van con todo. Contra ti, cuando la banca
-       eres tú, se animan más: quieren quebrarte. */
-    const animo = (1 - v.firme * .4) * (est.eresBanca ? 1.6 : 1) * (quiere ? 1 : .3);
+       eres tú, se animan más: quieren quebrarte. Con el tanto alto, más. */
+    const animo = (1 - v.firme * .4) * (est.eresBanca ? 1.6 : 1) * (quiere ? 1 : .3) * (1 + (t - 1) * .25);
     if (Math.random() < .12 * animo) { v.apuesta = suya; v.modo = 'todo'; }
     else if (Math.random() < .28 * animo) { v.apuesta *= 2; v.modo = 'doble'; }
+    // con la banca doblada o triple, cada moneda que pone vale por dos o por tres
+    if (v.modo !== 'todo') v.apuesta *= t;
     // nadie apuesta más de lo que tiene, ni más de lo que la banca puede pagar
     const queda = Math.floor((est.banca - puesto) / FICHA);
+    if (v.apuesta >= suya && suya <= queda) v.modo = 'todo';   // no le alcanza: va con todo lo que tiene
     v.apuesta = Math.max(0, Math.min(v.apuesta, suya, queda));
     if (!v.apuesta) { v.juega = false; v.modo = ''; grita(v, 'Ya no alcanza', 1200); pintarRonda(); return; }
     puesto += v.apuesta * FICHA;
@@ -1312,22 +1409,24 @@ function decideBanca() {
     pintarRonda();
   }, 900 + i * 450));
   if (est.eresBanca) {
-    $('rueda-k').textContent = `Vamos por ${est.vamos}`;
+    $('rueda-k').textContent = `Vamos por ${est.vamos}` + (t > 1 ? ` · ${TANTOS[t].nombre.toLowerCase()}` : '');
     $('rueda-t').textContent = 'La gente pone su plata contra ti…';
     mesa('m-rueda');
     setTimeout(() => { if (est.fase === 'apuesta') lanzaLaBanca(); }, 1200 + lista.length * 450);
     return;
   }
   const contra = est.quieres && est.quieres !== est.vamos;
-  $('apuesta-vamos').textContent = `Vamos por ${est.vamos}`;
+  $('apuesta-vamos').textContent = `Vamos por ${est.vamos}` + (t > 1 ? ` · ${TANTOS[t].nombre.toLowerCase()}` : '');
   $('apuesta-banca').textContent = `Banca ${plata(est.banca)}`;
   $('apuesta-dice').textContent = '«¿Va a jugar o no?»';
   $('apuesta-nota').textContent = contra
     ? `Tú querías ${est.quieres}, pero la gente pidió ${est.vamos}. ¿Entras igual?`
-    : `Si quedan ${QUEDAN[est.vamos]}, la banca paga el doble.`;
+    : t > 1
+      ? `La banca va ${TANTOS[t].nombre.toLowerCase()}: ${TANTOS[t].dice}. Ganas o pierdes ${t} veces más.`
+      : `Si quedan ${QUEDAN[est.vamos]}, la banca paga el doble.`;
   pintarMano();
   mesa('m-apuesta');
-  setTimeout(() => { if (est.fase === 'apuesta') grita(BANCA, '¿Va a jugar o no, mijo?', 2400); }, 900 + VECINOS.length * 450);
+  setTimeout(() => { if (est.fase === 'apuesta') grita(caja(), '¿Va a jugar o no, mijo?', 2400); }, 900 + lista.length * 450);
 }
 
 /* Si la banca eres tú, no hay panel de apuesta: miras a la gente apostar y
@@ -1349,11 +1448,17 @@ function lanzaLaBanca() {
 const QUEDAN = { pares: 'pares en cada agujero (4 y 4, 2 y 6)', nones: 'impares en cada agujero (3 y 5, 1 y 7)' };
 
 // la mano: cada moneda que pones en la mesa son 25 ctvs
+const valeFicha = () => FICHA * est.tanto;
+const centavos = c => c < 100 ? `${c}¢` : plata(c);
 function pintarMano() {
   const fichas = [...document.querySelectorAll('.ficha')];
-  const puestas = est.todo ? 4 : est.apostado / FICHA;
+  const puestas = est.todo ? 4 : est.apostado / valeFicha();
   // las que ya están en la mesa dejan su hueco: nada se corre bajo el dedo
-  fichas.forEach((f, i) => { f.classList.toggle('puesta', i < puestas); f.disabled = est.todo || i < puestas || est.apostado + FICHA > est.saldo; });
+  fichas.forEach((f, i) => {
+    f.classList.toggle('puesta', i < puestas);
+    f.disabled = est.todo || i < puestas || est.apostado + valeFicha() > est.saldo || est.apostado + valeFicha() > cubre();
+    f.textContent = centavos(valeFicha()); f.setAttribute('aria-label', `Poner ${centavos(valeFicha())}`);
+  });
   $('en-mesa').textContent = plata(est.apostado);
   $('b-juego').disabled = !est.apostado;
   const todo = $('b-todo');
@@ -1364,10 +1469,11 @@ function pintarMano() {
   r.setAttribute('aria-hidden', String(!est.apostado)); r.tabIndex = est.apostado ? 0 : -1;
 }
 // lo que la banca todavía puede cubrir, después de lo que pusieron los vecinos
-const cubre = () => est.banca - VECINOS.filter(v => v.juega).reduce((s, v) => s + v.apuesta * FICHA, 0);
+const cubre = () => est.banca - gente().filter(v => v.juega).reduce((s, v) => s + v.apuesta * FICHA, 0);
 function ponerMoneda() {
-  if (est.fase !== 'apuesta' || est.todo || est.apostado >= FICHA * 4 || est.apostado + FICHA > est.saldo || est.apostado + FICHA > cubre()) return;
-  est.apostado += FICHA; ponerEn(TU, 1); sonar('moneda'); vibrar(12); pintarRonda();
+  const m = valeFicha();
+  if (est.fase !== 'apuesta' || est.todo || est.apostado >= m * 4 || est.apostado + m > est.saldo || est.apostado + m > cubre()) return;
+  est.apostado += m; ponerEn(TU, est.tanto); sonar('moneda'); vibrar(12); pintarRonda();
   ultimaFicha = performance.now();
   pintarMano();
 }
@@ -1378,7 +1484,7 @@ function irConTodo() {
   if (est.todo) { recoger(); return; }
   // la banca no puede pagar más de lo que tiene, contando lo que ya pusieron los vecinos
   const tope = Math.min(est.saldo, cubre());
-  if (tope < FICHA) { grita(BANCA, 'Ya no me alcanza para cubrirle', 1600); return; }
+  if (tope < FICHA) { grita(caja(), 'Ya no me alcanza para cubrirle', 1600); return; }
   est.todo = true; est.apostado = Math.floor(tope / FICHA) * FICHA;
   vaciar(TU); ponerEn(TU, Math.min(12, est.apostado / FICHA));
   sonar('moneda'); vibrar([15, 40, 15]);
@@ -1443,15 +1549,15 @@ function paso() {
    tiro es limpio. */
 function arrancaTiro() {
   est.fase = 'espera';
-  const nadie = !est.juegas && !VECINOS.some(v => v.juega);
+  const nadie = !est.juegas && !gente().some(v => v.juega);
   if (nadie) {
-    grita(BANCA, '¿Nadie? Ya, otra ronda.', 1800);
+    grita(caja(), '¿Nadie? Ya, otra ronda.', 1800);
     setTimeout(nuevaRonda, 1900);
     return;
   }
   if (est.juegas && est.apostado >= FICHA * 4) {
     const g = globos.get(TU); if (g) g.classList.remove('ve');
-    grita(BANCA, 'Usted que va duro, lance usted', 2200);
+    grita(caja(), 'Usted que va duro, lance usted', 2200);
     $('lanzar-dice').textContent = '«Usted que va duro, lance usted.»';
     $('lanzar-k').hidden = true;
     enLaMano(DELANTE);
@@ -1463,12 +1569,13 @@ function arrancaTiro() {
   // la banca escoge cómo va a tirar esta vez, y lo anuncia
   const estilo = azar(ESTILOS);
   const t = tiroDeLaBanca(estilo);
-  $('rueda-k').textContent = `${BANCA.nombre} sopla las canicas`;
+  const banca = caja();
+  $('rueda-k').textContent = `${banca.nombre} sopla las canicas`;
   $('rueda-t').textContent = estilo.dice;
   mesa('m-rueda');
-  grita(BANCA, azar(['¡Sople, sople!', '¡Ya no hay apuestas!', estilo.grito]), 1400);
+  grita(banca, azar(['¡Sople, sople!', '¡Ya no hay apuestas!', estilo.grito]), 1400);
   // echa el brazo atrás y las suelta: las canicas salen cuando la mano llega adelante
-  setTimeout(() => BANCA.persona.lanza(() => lanzar(t.origen, t.angulo, t.fuerza, t.semilla)), 900);
+  setTimeout(() => banca.persona.lanza(() => lanzar(t.origen, t.angulo, t.fuerza, t.semilla)), 900);
 }
 
 /* Cómo tira la banca: despacito, para que bajen dando pocas vueltas; a
@@ -1492,7 +1599,7 @@ function sale(origen, angulo, fuerza, semilla) {
   return r.nulo ? null : r.par ? 'pares' : 'nones';
 }
 function tiroAlAzar(estilo) {
-  const origen = ENFRENTE + (Math.random() - .5) * .5, lado = Math.random() < .5 ? -1 : 1;
+  const origen = caja().angulo + (Math.random() - .5) * .5, lado = Math.random() < .5 ? -1 : 1;
   return { origen, angulo: origen + Math.PI + lado * (1.1 + Math.random() * .45),
     fuerza: estilo.min + Math.random() * (estilo.max - estilo.min), semilla: Math.floor(Math.random() * 2 ** 31) };
 }
@@ -1538,20 +1645,20 @@ function decidir() {
   if (gana) {
     // la banca paga el doble: devuelve lo de cada uno y pone otro tanto
     sonar('gente', 1);
-    if (!est.eresBanca) { grita(BANCA, azar(['Ya, ya… aquí está su plata', '¡Ni modo, pago!', 'Hoy no es mi día']), 2400); BANCA.persona.lamenta(); }
+    if (!est.eresBanca) { grita(caja(), azar(['Ya, ya… aquí está su plata', '¡Ni modo, pago!', 'Hoy no es mi día']), 2400); caja().persona.lamenta(); }
     jugadores.forEach((v, i) => { volar(caja(), v, Math.min(12, v.apuesta), i * .25); v.plata += v.apuesta * FICHA * 2;
       grita(v, v.modo === 'todo' ? '¡Me la llevo toda!' : v.modo === 'doble' ? '¡Doblado y cobrado!' : azar(['¡Paga, paga!', '¡Eso!', '¡Ganamos!']), 1600, null, v.modo ? 'fuerte' : ''); v.persona.celebra(); });
     est.banca -= apostado;
-    if (est.juegas) { volar(BANCA, TU, Math.min(12, est.apostado / FICHA), .2); est.saldo += est.apostado * 2; est.banca -= est.apostado; }
+    if (est.juegas) { volar(caja(), TU, Math.min(12, est.apostado / FICHA), .2); est.saldo += est.apostado * 2; est.banca -= est.apostado; }
   } else {
     sonar('ay', 1);
-    if (!est.eresBanca) { grita(BANCA, azar(['¡La casa gana!', '¡Para la banca!', 'Gracias, gracias']), 2400); BANCA.persona.celebra(); }
+    if (!est.eresBanca) { grita(caja(), azar(['¡La casa gana!', '¡Para la banca!', 'Gracias, gracias']), 2400); caja().persona.celebra(); }
     jugadores.forEach((v, i) => { const n = pila(v).userData.n; vaciar(v); volar(v, caja(), n, i * .2);
       if (v.modo === 'todo') grita(v, '¡Me quedé limpio!', 1700, null, 'fuerte');
       else if (Math.random() < .6) grita(v, azar(['¡Ayayay!', '¡No puede ser!', '¡Por un pelito!']), 1500);
       v.persona.lamenta(); });
     est.banca += apostado;
-    if (est.juegas) { const n = pila(TU).userData.n; vaciar(TU); volar(TU, BANCA, n, .3); est.banca += est.apostado; }
+    if (est.juegas) { const n = pila(TU).userData.n; vaciar(TU); volar(TU, caja(), n, .3); est.banca += est.apostado; }
   }
   logrosDeLaRonda(r, gana);
   const ganaron = gana ? jugadores.concat(est.juegas ? [TU] : []) : [];
@@ -1566,9 +1673,10 @@ function decidir() {
   if (est.eresBanca && apostado) { vibrar(gana ? 160 : [40, 60, 40, 60, 140]); delta(gana ? -apostado : apostado); }
   escenaEl.classList.remove('tension');
   let texto;
-  if (est.eresBanca) texto = `${donde} ${gana ? `Sale lo de la gente: pagas el doble, ${plata(apostado)} de tu banca.` : `Barres la mesa: te llevas ${plata(apostado)}.`}`;
+  const limpios = jugadores.filter(v => v.plata < FICHA).length;
+  if (est.eresBanca) texto = `${donde} ${gana ? `Sale lo de la gente: pagas ${plata(apostado)} de tu banca.` : `Barres la mesa: te llevas ${plata(apostado)}.${limpios ? ` Dejaste limpio${limpios > 1 ? 's a ' + limpios : ' a uno'}.` : ''}`}`;
   else if (!est.juegas) texto = `${donde} ${gana ? 'Ganó la gente y tú pasaste.' : 'Ganó la banca; hiciste bien en pasar.'}`;
-  else if (gana) texto = `${donde} La banca paga el doble: te llevas ${plata(est.apostado * 2)}.`;
+  else if (gana) texto = `${donde} La banca paga: te llevas ${plata(est.apostado * 2)}.`;
   else texto = `${donde} La banca barre la mesa: pierdes ${plata(est.apostado)}.`;
   $('fin-badge').textContent = tono === 'pasa' ? 'Pasaste' : tono === 'gana' ? 'Ganas' : 'Pierdes';
   $('fin-badge').className = 'badge ' + (tono === 'pasa' ? '' : tono === 'gana' ? 'badge-ok' : 'badge-danger');
@@ -1596,22 +1704,79 @@ function logrosDeLaRonda(r, gana) {
   if (est.eresBanca && (est.rondasBanca = (est.rondasBanca || 0) + 1) >= 10) perfil.desbloquear('boliche-banca-de-una-noche');
 }
 
-/* La banca se quedó sin plata: se quiebra. Si la quebraste tú, pasas a
-   ser la banca; si eras la banca y te quebraron, vuelve Don Segundo. */
+/* La banca se quedó sin plata: se quiebra, y la agarra el que tenga más
+   plata en la tina —tú o cualquiera—. Si nadie tiene para poner banca,
+   se acabó el juego. */
+let proximaBanca = null;
 function quiebra() {
-  if (est.eresBanca) {
-    grita(azar(VECINOS), '¡Quebramos a la banca!', 2400);
-    $('quiebra-t').textContent = 'Te quebraron.';
-    $('quiebra-x').textContent = 'La gente te dejó sin un centavo. Vuelve Don Segundo de banca y tú a apostar, con cinco dólares que te fía.';
-    $('b-ser-banca').textContent = 'Volver a apostar';
-  } else {
-    grita(BANCA, '¡Me quebraron!', 2400); BANCA.persona.lamenta();
-    perfil.desbloquear('boliche-quebraste');
-    $('quiebra-t').textContent = `${BANCA.nombre} se quedó sin un centavo.`;
-    $('quiebra-x').textContent = 'Ahora la banca eres tú: tu plata es la de la banca, la gente grita, vas por lo que pida la mayoría y lanzas. Si sale lo de ellos, pagas el doble; si no, barres la mesa. Ahora ellos intentan quebrarte.';
-    $('b-ser-banca').textContent = 'Ser la banca';
+  const caido = caja();
+  const candidatos = [...PERSONAS.filter(q => q !== caido).map(q => ({ q, plata: q.plata })),
+    ...(est.eresBanca ? [] : [{ q: TU, plata: est.saldo }])].sort((a, b) => b.plata - a.plata);
+  const rico = candidatos[0];
+  if (est.eresBanca) grita(azar(VECINOS), '¡Quebramos a la banca!', 2400);
+  else { grita(caido, '¡Me quebraron!', 2400); caido.persona.lamenta(); }
+  if (!est.eresBanca && caido === BANCA) perfil.desbloquear('boliche-quebraste');
+  if (!rico || rico.plata < FICHA * 8) {
+    setTimeout(() => finDelJuego(`${est.eresBanca ? 'Te quebraron' : `${caido.nombre} se quebró`} y nadie tiene para poner la banca.`), 1400);
+    return;
   }
+  proximaBanca = rico.q;
+  $('quiebra-t').textContent = est.eresBanca ? 'Te quebraron.' : `${caido.nombre} se quedó sin un centavo.`;
+  $('quiebra-x').textContent = rico.q === TU
+    ? `Tú eres quien tiene más plata (${plata(rico.plata)}): ahora la banca eres tú. La gente grita, vas por lo que pida la mayoría y escoges a cuánto va: sencillo, doble o triple. Ahora ellos intentan quebrarte.`
+    : `La banca la agarra quien tiene más plata: ${rico.q.nombre}, con ${plata(rico.plata)}.${est.eresBanca ? ' Tú vuelves a apostar.' : ''}`;
+  $('b-ser-banca').textContent = rico.q === TU ? 'Ser la banca' : 'Seguir';
   setTimeout(() => { $('c-quiebra').hidden = false; }, 1400);
+}
+function pasarBanca(nuevo) {
+  // lo poco que quedó en la banca vuelve al que la tenía
+  if (est.eresBanca) est.saldo += est.banca; else caja().plata += est.banca;
+  if (nuevo === TU) { est.banca = est.saldo; est.saldo = 0; est.rondasBanca = 0; }
+  else { est.banca = nuevo.plata; nuevo.plata = 0; }
+  est.banquero = nuevo.nombre;
+  for (const g of pilas.values()) escena.remove(g); pilas.clear();   // la pila de la banca cambia de dueño y de sitio
+  rondaLista = [];
+}
+
+/* Se acabó el boliche: ya casi nadie tiene plata. Cómo quedó cada uno. */
+function seAcabo() {
+  const apuestan = sentados().length + (est.eresBanca ? 0 : 1);
+  const limpios = sentados().filter(fuera);
+  if (limpios.length * 2 < apuestan) return false;
+  finDelJuego(`Se quedaron limpios ${limpios.map(q => q.nombre).join(', ').replace(/, ([^,]*)$/, ' y $1')}. Sin gente que apueste, se acaba el boliche.`);
+  return true;
+}
+function finDelJuego(motivo) {
+  est.fase = 'final';
+  for (const id of ['c-limpio', 'c-quiebra']) $(id).hidden = true;
+  $('final-x').textContent = motivo;
+  const filas = [
+    { q: TU, plata: est.saldo + (est.eresBanca ? est.banca : 0) },
+    ...PERSONAS.map(q => ({ q, plata: q.plata + (q === caja() ? est.banca : 0) })),
+  ].sort((a, b) => b.plata - a.plata);
+  const lista = $('final-lista'); lista.innerHTML = '';
+  for (const f of filas) {
+    const li = document.createElement('li');
+    if (f.q === TU) li.className = 'tu';
+    const n = document.createElement('span'); n.textContent = f.q === TU ? 'Tú' : f.q.nombre;
+    if (f.q === caja()) n.textContent += ' · banca';
+    const m = document.createElement('b'); m.textContent = f.plata < FICHA && f.q !== caja() ? 'Limpio' : plata(f.plata);
+    li.append(n, m); lista.append(li);
+  }
+  const puesto = filas.findIndex(f => f.q === TU);
+  $('final-t').textContent = puesto === 0 ? '¡Te llevaste la noche!' : `Quedaste en el puesto ${puesto + 1} de ${filas.length}.`;
+  guardar();
+  $('c-final').hidden = false;
+  $('b-nuevo').focus({ preventScroll: true });
+}
+function juegoNuevo() {
+  for (const v of PERSONAS) { v.plata = PLATA_VECINO[v.nombre]; v.fiado = false; }
+  est.banquero = BANCA.nombre; est.banca = BANCA_INICIAL; est.saldo = INICIAL; est.fiado = false; est.rondasBanca = 0;
+  for (const g of pilas.values()) escena.remove(g); pilas.clear();
+  rondaLista = [];
+  $('c-final').hidden = true;
+  ponerEn(caja(), 10);
+  guardar(); pintar(); nuevaRonda();
 }
 
 /* El sello grande del final, y lo que entra o sale de tu plata. */
@@ -1636,15 +1801,24 @@ function nulo() {
   if (est.juegas) est.saldo += est.apostado;
   for (const v of gente()) if (v.juega) v.plata += v.apuesta * FICHA;
   est.juegas = false; est.apostado = 0; est.todo = false; guardar();
-  grita(BANCA, 'Una se quedó afuera: no vale. Otra.', 2000);
+  grita(caja(), 'Una se quedó afuera: no vale. Otra.', 2000);
   nuevaRonda();
 }
 
+const SUCRES_POR_PLATA = 10;   // diez sucres del perfil por cinco dólares de mentira
 function revisarPlata() {
   if (est.eresBanca || est.saldo >= FICHA) return true;
+  const sucres = perfil.saldo(), alcanza = sucres >= SUCRES_POR_PLATA;
+  $('b-fiado').hidden = est.fiado;
+  $('b-sucres').disabled = !alcanza;
+  $('limpio-x').textContent = est.fiado
+    ? 'La banca ya te fió una vez y no fía dos. Puedes cambiar sucres de tu perfil por plata, o dejarlo aquí.'
+    : 'La banca te fía cinco dólares, pero una sola vez. Para el próximo Finados se los devuelves, con guagua de pan. O cambia sucres de tu perfil.';
+  $('limpio-sucres').textContent = `Tienes ${sucres} ${sucres === 1 ? 'sucre' : 'sucres'}` + (alcanza ? '.' : `: te faltan ${SUCRES_POR_PLATA - sucres}.`);
   $('c-limpio').hidden = false;
   return false;
 }
+function volverConPlata() { est.saldo += INICIAL; guardar(); pintar(); $('c-limpio').hidden = true; nuevaRonda(); }
 
 /* ─── los controles ────────────────────────────────────────── */
 document.querySelectorAll('[data-grita]').forEach(b => {
@@ -1662,13 +1836,21 @@ $('b-recoger').addEventListener('click', recoger);
 $('b-todo').addEventListener('click', irConTodo);
 $('b-ser-banca').addEventListener('click', () => {
   $('c-quiebra').hidden = true;
-  if (est.eresBanca) { est.eresBanca = false; est.banca = BANCA_INICIAL; if (est.saldo < INICIAL) est.saldo = INICIAL; }
-  else { est.eresBanca = true; est.rondasBanca = 0; est.banca = est.saldo; est.saldo = 0; BANCA.plata = Math.max(BANCA.plata, PLATA_VECINO['Don Segundo']); }
-  for (const g of pilas.values()) escena.remove(g); pilas.clear();   // la pila de la banca cambia de dueño y de sitio
-  guardar(); pintar(); nuevaRonda();
+  if (proximaBanca) pasarBanca(proximaBanca);
+  proximaBanca = null;
+  guardar(); pintar();
+  if (revisarPlata()) nuevaRonda();
 });
+document.querySelectorAll('[data-tanto]').forEach(b => b.addEventListener('click', () => escogerTanto(+b.dataset.tanto)));
+$('b-nuevo').addEventListener('click', juegoNuevo);
 $('b-otra').addEventListener('click', () => { if (revisarPlata()) nuevaRonda(); });
-$('b-fiado').addEventListener('click', () => { est.saldo += INICIAL; guardar(); $('c-limpio').hidden = true; nuevaRonda(); });
+$('b-fiado').addEventListener('click', () => { if (est.fiado) return; est.fiado = true; volverConPlata(); });
+$('b-sucres').addEventListener('click', () => {
+  if (!perfil.gastar(SUCRES_POR_PLATA)) { revisarPlata(); return; }
+  window.malDS && malDS.aviso(`Cambiaste ${SUCRES_POR_PLATA} sucres por ${plata(INICIAL)}`, '');
+  volverConPlata();
+});
+$('b-me-voy').addEventListener('click', () => finDelJuego('Te quedaste limpio y te fuiste a la casa.'));
 const pintarLugares = () => document.querySelectorAll('[data-escenario]').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.escenario === est.escenario)));
 document.querySelectorAll('[data-escenario]').forEach(b => b.addEventListener('click', () => {
   if (b.dataset.escenario === est.escenario) return;
@@ -1782,7 +1964,7 @@ lienzo.addEventListener('pointercancel', () => { gesto = null; guia.visible = fa
 
 window.addEventListener('resize', medir);
 ponerEscenario(est.escenario);
-ponerEn(BANCA, 10);
+ponerEn(caja(), 10);
 enLaMano(ENFRENTE);
 pintar(); medir();
 requestAnimationFrame(t => { antes = t; cuadro(t); });
