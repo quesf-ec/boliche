@@ -55,7 +55,7 @@ function grano(g, w, h, { manchas = 1800, tamano = 18, claro = '235,230,220', os
 const TEXTURAS = {
   cemento: T => lienzo(T, 512, 512, (g, w, h) => { g.fillStyle = '#a9a49b'; g.fillRect(0, 0, w, h); grano(g, w, h); }),
   concreto: T => lienzo(T, 512, 512, (g, w, h) => {
-    g.fillStyle = '#c4c2bc'; g.fillRect(0, 0, w, h);
+    g.fillStyle = '#c9c0ae'; g.fillRect(0, 0, w, h);
     grano(g, w, h, { manchas: 900, tamano: 30, alfa: .05, puntos: 5000, rayas: 6 });
   }),
   tierra: T => lienzo(T, 512, 512, (g, w, h) => {
@@ -63,28 +63,29 @@ const TEXTURAS = {
     grano(g, w, h, { manchas: 2400, tamano: 26, claro: '190,160,120', oscuro: '70,50,35', alfa: .12, puntos: 18000, rayas: 40 });
   }),
   losa: T => lienzo(T, 512, 512, (g, w, h) => {
-    g.fillStyle = '#b3b0a8'; g.fillRect(0, 0, w, h);
+    g.fillStyle = '#bcb09c'; g.fillRect(0, 0, w, h);
     grano(g, w, h, { manchas: 900, tamano: 22, alfa: .06, puntos: 8000, rayas: 10 });
     g.strokeStyle = 'rgba(60,58,52,.55)'; g.lineWidth = 3;
     g.strokeRect(1.5, 1.5, w - 3, h - 3);
   }),
   adoquin: T => lienzo(T, 512, 512, (g, w, h) => {
-    g.fillStyle = '#4b4741'; g.fillRect(0, 0, w, h);
+    g.fillStyle = '#4e4339'; g.fillRect(0, 0, w, h);
     const n = 8, c = w / n;
     for (let y = 0; y < n; y++) for (let x = 0; x < n; x++) {
       const ox = (y % 2) * c / 2, k = 140 + Math.random() * 45 | 0;
       const cx = x * c + ox + c / 2, cy = y * c + c / 2;
       nueve(w, h, (dx, dy) => {
         const gr = g.createRadialGradient(cx + dx - c * .15, cy + dy - c * .15, 2, cx + dx, cy + dy, c * .55);
-        gr.addColorStop(0, `rgb(${k + 25},${k + 18},${k + 8})`); gr.addColorStop(1, `rgb(${k - 35},${k - 38},${k - 42})`);
+        gr.addColorStop(0, `rgb(${k + 28},${k + 16},${k})`); gr.addColorStop(1, `rgb(${k - 32},${k - 42},${k - 52})`);
         g.fillStyle = gr; g.beginPath(); g.roundRect(cx + dx - c * .45, cy + dy - c * .43, c * .9, c * .86, c * .22); g.fill();
       });
     }
   }),
+  // ocre y hueso, con poco contraste: la baldosa roja se comía a la banca
   baldosa: T => lienzo(T, 512, 512, (g, w, h) => {
     const n = 4, c = w / n;
     for (let y = 0; y < n; y++) for (let x = 0; x < n; x++) {
-      g.fillStyle = (x + y) % 2 ? '#8e2f25' : '#e6dcc4'; g.fillRect(x * c, y * c, c, c);
+      g.fillStyle = (x + y) % 2 ? '#b08456' : '#dccdb0'; g.fillRect(x * c, y * c, c, c);
     }
     grano(g, w, h, { manchas: 600, tamano: 20, alfa: .07, puntos: 6000, rayas: 8 });
     g.strokeStyle = 'rgba(40,30,25,.5)'; g.lineWidth = 3;
@@ -279,11 +280,12 @@ function tope(THREE, CFG, alt, forma, madera) {
 }
 
 /* ─── asientos ─────────────────────────────────────────────── */
-const COLORES_SILLA = [0xc0262d, 0x1f5fa8, 0xf2f2ee, 0x2c8c4a, 0xd96f1e];
+// de plástico, pero ya pasaditas de sol: terracota, mostaza, hueso, oliva y pizarra
+const COLORES_SILLA = [0xa8452f, 0x587286, 0xe6dcc6, 0x667a44, 0xc98a34];
 function silla(THREE, tipo) {
   const g = new THREE.Group();
   if (tipo === 'plastico') {
-    const m = new THREE.MeshStandardMaterial({ color: COLORES_SILLA[Math.floor(Math.random() * COLORES_SILLA.length)], roughness: .45 });
+    const m = new THREE.MeshStandardMaterial({ color: COLORES_SILLA[Math.floor(Math.random() * COLORES_SILLA.length)], roughness: .6 });
     const asiento = new THREE.Mesh(new THREE.BoxGeometry(.36, .03, .34), m); asiento.position.y = .4;
     const espaldar = new THREE.Mesh(new THREE.BoxGeometry(.36, .36, .03), m); espaldar.position.set(0, .6, -.17); espaldar.rotation.x = -.12;
     g.add(asiento, espaldar);
@@ -298,8 +300,9 @@ function silla(THREE, tipo) {
     for (let i = 0; i < 3; i++) { const a = i / 3 * Math.PI * 2; const p = new THREE.Mesh(new THREE.CylinderGeometry(.018, .022, .36, 6), m); p.position.set(Math.cos(a) * .11, .18, Math.sin(a) * .11); g.add(p); }
     return { g, alto: .38 };
   }
-  // jaba de colas, con las tapas asomando
-  const m = new THREE.MeshStandardMaterial({ color: Math.random() < .5 ? 0xc9302c : 0xe8b020, roughness: .55 });
+  // jaba de colas, con las tapas asomando: pizarra o mostaza, que el
+  // vino lo lleva la banca y no se pierda contra su jaba
+  const m = new THREE.MeshStandardMaterial({ color: Math.random() < .5 ? 0x587286 : 0xd09a3c, roughness: .65 });
   const jaba = new THREE.Mesh(new THREE.BoxGeometry(.4, .3, .3), m); jaba.position.y = .15; g.add(jaba);
   const tapa = new THREE.MeshStandardMaterial({ color: 0xd8d4c8, metalness: .6, roughness: .4 });
   for (let i = 0; i < 4; i++) { const t = new THREE.Mesh(new THREE.CylinderGeometry(.018, .018, .015, 8), tapa); t.position.set(-.15 + i * .1, .305, .13); g.add(t); }
@@ -350,10 +353,10 @@ const ENTORNO = {
       map: lienzo(THREE, 1024, 512, (c, w, h) => {
         c.fillStyle = '#efe8d8'; c.fillRect(0, 0, w, h);
         grano(c, w, h, { manchas: 700, tamano: 30, alfa: .05, puntos: 3000, rayas: 12 });
-        c.fillStyle = '#2f6db0'; c.fillRect(0, h * .82, w, h * .18);
+        c.fillStyle = '#4d6b82'; c.fillRect(0, h * .82, w, h * .18);
       }, { repite: false }) }));
     pared.position.set(0, 1.45, -3.6); pared.receiveShadow = true; g.add(pared);
-    const puerta = caja(THREE, .95, 2.05, .08, 0x2a5f9e); puerta.position.set(1.7, 1.03, -3.44); g.add(puerta);
+    const puerta = caja(THREE, .95, 2.05, .08, 0x46657c); puerta.position.set(1.7, 1.03, -3.44); g.add(puerta);
     const marco = caja(THREE, 1.25, 1, .1, 0x6b4a2b); marco.position.set(-1.8, 1.55, -3.43); g.add(marco);
     const vidrio = caja(THREE, 1.05, .82, .1, 0x233140, .2); vidrio.position.set(-1.8, 1.55, -3.41); g.add(vidrio);
     const teja = new THREE.Mesh(new THREE.BoxGeometry(10.6, .12, 1.5), new THREE.MeshStandardMaterial({ roughness: .9,
@@ -388,7 +391,7 @@ const ENTORNO = {
       const farol = new THREE.Mesh(new THREE.SphereGeometry(.14, 12, 10), new THREE.MeshBasicMaterial({ color: 0xfff6dc }));
       farol.position.set(x, 2.95, z); g.add(farol);
     }
-    const colores = [0xf3c623, 0x1b5faa, 0xd8392b, 0x2f8f3a, 0xffffff];
+    const colores = [0xd9a640, 0x5a7890, 0xb5523b, 0x6f7f45, 0xeee2c8];
     for (let i = 0; i <= 24; i++) {
       const k = i / 24, x = -2.8 + 5.6 * k, y = 2.75 - Math.sin(k * Math.PI) * .55;
       const b = new THREE.Mesh(new THREE.ConeGeometry(.07, .16, 3), new THREE.MeshStandardMaterial({ color: colores[i % colores.length], roughness: .7, side: THREE.DoubleSide }));
@@ -403,11 +406,11 @@ const ENTORNO = {
   tienda(THREE, g) {
     // la fachada de la tienda, con la ventana del mostrador abierta
     const pared = caja(THREE, 9, 3, .3, 0xe7c34a); pared.position.set(0, 1.5, -3.5); g.add(pared);
-    const zocalo = caja(THREE, 9.02, .6, .32, 0x3b7a52); zocalo.position.set(0, .3, -3.5); g.add(zocalo);
+    const zocalo = caja(THREE, 9.02, .6, .32, 0x56704a); zocalo.position.set(0, .3, -3.5); g.add(zocalo);
     const hueco = caja(THREE, 2.6, 1.3, .32, 0x241c18); hueco.position.set(-.6, 1.25, -3.49); g.add(hueco);
     const mostrador = caja(THREE, 2.7, .1, .45, 0x6b4a2b); mostrador.position.set(-.6, .62, -3.25); g.add(mostrador);
     // lo que hay en las repisas
-    const tonos = [0xd8392b, 0xf3c623, 0x1b5faa, 0x2f8f3a, 0xffffff, 0xe07a2a];
+    const tonos = [0xb5452e, 0xd9a640, 0x55738a, 0x6a7d44, 0xeee2c8, 0xc8702e];
     for (let fila = 0; fila < 3; fila++) {
       const repisa = caja(THREE, 2.5, .03, .25, 0x8a5a33); repisa.position.set(-.6, .8 + fila * .38, -3.42); g.add(repisa);
       for (let i = 0; i < 14; i++) {
@@ -422,10 +425,10 @@ const ENTORNO = {
     letrero.position.set(-.3, 2.38, -3.33); g.add(letrero);
     const tubo = new THREE.Mesh(new THREE.CylinderGeometry(.025, .025, 1.6, 8), new THREE.MeshBasicMaterial({ color: 0xf2fbff }));
     tubo.rotation.z = Math.PI / 2; tubo.position.set(-.3, 2.95, -3.25); g.add(tubo);
-    const luz = new THREE.PointLight(0xe8f4ff, 5, 7, 1.4); luz.position.set(-.3, 2.7, -2.8); g.add(luz);
+    const luz = new THREE.PointLight(0xfff0dc, 5, 7, 1.4); luz.position.set(-.3, 2.7, -2.8); g.add(luz);
     // jabas de colas apiladas al lado
     for (let i = 0; i < 5; i++) {
-      const j = caja(THREE, .42, .3, .32, i % 2 ? 0xc9302c : 0xe8b020, .55);
+      const j = caja(THREE, .42, .3, .32, i % 2 ? 0x587286 : 0xd09a3c, .65);
       j.position.set(2.6 + (i % 2) * .45, .15 + Math.floor(i / 2) * .31, -3.0); j.castShadow = true; g.add(j);
     }
   },
@@ -433,15 +436,19 @@ const ENTORNO = {
 
 /* Lo propio de cada escenario. `alto` es cuánto sobresale la tina del
    piso (0: está hundida en la tierra). */
+/* La luz va cálida en todos, como tarde de Finados con colada morada:
+   `sol` es la luz principal (con sombra), `hemi` el cielo y el suelo, y
+   `relleno` una luz suave sin sombra que viene del lado de la cámara para
+   que las caras de arcilla se lean. */
 const DATOS = {
-  comunidad: { tina: 'cemento', tope: 'ladrillos', piso: 'tierra', alto: 0, asiento: 'suelo', cielo: 0x141826, noche: true,
-    sol: [0xffd9a0, 1.4, [-.6, 4, .4]], hemi: [0x8ea0c8, 0x4a3628, .55], radioGente: 1.48, radioMonedas: 1.22, yMonedas: 0, repPiso: 7 },
-  patio: { tina: 'concreto', tope: 'muro', piso: 'losa', alto: .32, asiento: 'plastico', cielo: 0xcbd9e6, rugosa: .85,
-    sol: [0xffdcaa, 2.5, [-3, 3.4, 2.2]], hemi: [0xdbe8ff, 0x8a6a4a, .8], radioGente: 1.5, radioMonedas: 1.045, yMonedas: .026, repPiso: 10 },
-  plaza: { tina: 'carita', tope: 'nariz', piso: 'adoquin', alto: .16, asiento: 'banquito', cielo: 0xbcd3ea, rugosa: .45, pozo: 0x3a3a3a, bordeClaro: 1,
-    sol: [0xfff4e0, 2.7, [2, 5, 1.6]], hemi: [0xe6f0ff, 0x7a6a58, .85], radioGente: 1.48, radioMonedas: 1.045, yMonedas: .026, repPiso: 8 },
-  tienda: { tina: 'batea', tope: 'tabla', piso: 'baldosa', alto: .28, asiento: 'jaba', cielo: 0x2a2340, rugosa: .7, materialBorde: 0x7a4f2c,
-    sol: [0xffc890, 1.3, [1.5, 4, 2]], hemi: [0x9aa8d0, 0x4a3a30, .6], radioGente: 1.5, radioMonedas: 1.045, yMonedas: .026, repPiso: 14 },
+  comunidad: { tina: 'cemento', tope: 'ladrillos', piso: 'tierra', alto: 0, asiento: 'suelo', cielo: 0x1a1520, noche: true,
+    sol: [0xffd39a, 1.4, [-.6, 4, .4]], hemi: [0x9a8aa6, 0x4e3828, .55], relleno: [0xffc890, .35, [0, 2.6, 4]], radioGente: 1.48, radioMonedas: 1.22, yMonedas: 0, repPiso: 7 },
+  patio: { tina: 'concreto', tope: 'muro', piso: 'losa', alto: .32, asiento: 'plastico', cielo: 0xe4d4bc, rugosa: .85,
+    sol: [0xffd2a0, 2.3, [-3, 3.4, 2.2]], hemi: [0xf2dfc4, 0x8a6446, .8], relleno: [0xffe0b8, .4, [0, 2.6, 4]], radioGente: 1.5, radioMonedas: 1.045, yMonedas: .026, repPiso: 10 },
+  plaza: { tina: 'carita', tope: 'nariz', piso: 'adoquin', alto: .16, asiento: 'banquito', cielo: 0xe2cfb2, rugosa: .45, pozo: 0x3d342c, bordeClaro: 1,
+    sol: [0xffdcae, 2.45, [2, 5, 1.6]], hemi: [0xf4e0c4, 0x7a6048, .85], relleno: [0xffe0b8, .4, [0, 2.6, 4]], radioGente: 1.48, radioMonedas: 1.045, yMonedas: .026, repPiso: 8 },
+  tienda: { tina: 'batea', tope: 'tabla', piso: 'baldosa', alto: .28, asiento: 'jaba', cielo: 0x261c26, rugosa: .7, materialBorde: 0x7a4f2c,
+    sol: [0xffc48a, 1.3, [1.5, 4, 2]], hemi: [0xa898a8, 0x4e3a2e, .6], relleno: [0xffc890, .35, [0, 2.6, 4]], radioGente: 1.5, radioMonedas: 1.045, yMonedas: .026, repPiso: 14 },
 };
 
 export function construir(THREE, CFG, alt, clave) {
@@ -465,6 +472,11 @@ export function construir(THREE, CFG, alt, clave) {
   Object.assign(sol.shadow.camera, { left: -2.6, right: 2.6, top: 2.6, bottom: -2.6, near: .3, far: 12 });
   sol.shadow.bias = -0.0005;
   grupo.add(sol, sol.target);
+  if (e.relleno) {
+    const relleno = new THREE.DirectionalLight(e.relleno[0], e.relleno[1]);
+    relleno.position.set(...e.relleno[2]);
+    grupo.add(relleno);
+  }
 
   // lo de alrededor, corrido al nivel del piso
   const entorno = new THREE.Group(); entorno.position.y = pisoY;

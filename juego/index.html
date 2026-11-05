@@ -527,8 +527,8 @@ body{-webkit-touch-callout:none}
 <script src="https://franciscombp.github.io/ds/mal/mal.js?v=1.0.22" defer></script>
 <script type="module">
 import * as THREE from './three.module.min.js';
-import { Persona } from './gente.js?v=2';
-import { construir as construirEscenario, ESCENARIOS } from './escenarios.js?v=3';
+import { Persona } from './gente.js?v=3';
+import { construir as construirEscenario, ESCENARIOS } from './escenarios.js?v=4';
 import * as perfil from '../../perfil/perfil.js?v=3';
 
 const $ = id => document.getElementById(id);
@@ -667,13 +667,13 @@ escena.add(brilloRedondo, brilloCajita);
    figura (gente.js) se arma de nuevo cada vez que cambia el escenario,
    porque en uno se agachan en el piso y en otro se sientan. */
 const VECINOS = [
-  { nombre: 'Don Lucho', firme: .7, mano: 2, aspecto: { pelo: 0x1a1210, piel: 0xa86f48, ropa: 0x6b4a2b, poncho: 0x9b1d2a, sombrero: 0x2b2420 } },
-  { nombre: 'la Mariíta', firme: .35, mano: 1, aspecto: { pelo: 0x16110e, piel: 0xc68a5c, ropa: 0xf2efe6, chalina: 0x1b5faa, anaco: 0x1d1a2a, trenza: true, sombrero: 0xf0ead8, cinta: 0x8a2a2a, escala: .94 } },
-  { nombre: 'el Kevin', firme: .2, mano: 1, aspecto: { pelo: 0x2b1d14, piel: 0xd29b72, ropa: 0x2f7d4a, gorra: 0x1b1b1b, pantalon: 0x2a3b5a, escala: .97 } },
-  { nombre: 'Doña Inés', firme: .55, mano: 2, aspecto: { pelo: 0x1a1210, piel: 0x8d5a3a, ropa: 0x7a2f8d, chalina: 0xc23b6a, anaco: 0x15131c, trenza: 0x2f8f3a, sombrero: 0x3a2c24, escala: .95 } },
-  { nombre: 'el Pato', firme: .45, mano: 3, aspecto: { pelo: 0x3a2a1e, piel: 0xb97d55, ropa: 0xd2782a, pantalon: 0x3a3a3a } },
+  { nombre: 'Don Lucho', firme: .7, mano: 2, aspecto: { pelo: 0x2a1a12, piel: 0xb07a50, ropa: 0xe6d6b4, pantalon: 0x4e3a2c, poncho: 0x4f6878, franja: 0xe2b04a, sombrero: 0x8a6440, cinta: 0x3a2a20 } },
+  { nombre: 'la Mariíta', firme: .35, mano: 1, aspecto: { pelo: 0x241812, piel: 0xc99268, ropa: 0xf0e2c2, chalina: 0x5d7488, anaco: 0x3e2a22, faja: 0xa8442f, trenza: 0xc0603a, sombrero: 0xeee0c2, cinta: 0x8a3b36, escala: .94 } },
+  { nombre: 'el Kevin', firme: .2, mano: 1, aspecto: { pelo: 0x33221a, piel: 0xcf9a6e, ropa: 0x6f7c45, gorra: 0x9a5a34, pantalon: 0x4f5866, escala: .97 } },
+  { nombre: 'Doña Inés', firme: .55, mano: 2, aspecto: { pelo: 0x2a1a12, piel: 0x98623f, ropa: 0x8e4a4a, chalina: 0xd09a3c, anaco: 0x33241f, faja: 0x6c7d4c, trenza: 0x6c7d4c, sombrero: 0x5c3d2a, cinta: 0xd09a3c, escala: .95 } },
+  { nombre: 'el Pato', firme: .45, mano: 3, aspecto: { pelo: 0x3d2a1e, piel: 0xb78057, ropa: 0xd4a040, pantalon: 0x6a4630 } },
 ];
-const BANCA = { nombre: 'Don Segundo', aspecto: { pelo: 0x2a2420, piel: 0x9a6542, ropa: 0xe9e3d3, poncho: 0x5a1a1a, franja: 0x1e1a18, sombrero: 0x1e1a18, escala: 1.06 } };
+const BANCA = { nombre: 'Don Segundo', aspecto: { pelo: 0x2e2018, piel: 0x9e6844, ropa: 0xe8dcc0, pantalon: 0x3e2c22, poncho: 0x7c2f24, franja: 0xd09a45, sombrero: 0x2e221c, cinta: 0x7c2f24, escala: 1.12 } };
 const ANGULOS = [-2.95, -2.25, -.9, -.2, .28];   // alrededor del borde, del lado de enfrente
 const ENFRENTE = -Math.PI / 2, DELANTE = Math.PI / 2;
 VECINOS.forEach((v, i) => { v.angulo = ANGULOS[i]; });
