@@ -85,7 +85,7 @@ const TEXTURAS = {
   baldosa: T => lienzo(T, 512, 512, (g, w, h) => {
     const n = 4, c = w / n;
     for (let y = 0; y < n; y++) for (let x = 0; x < n; x++) {
-      g.fillStyle = (x + y) % 2 ? '#b08456' : '#dccdb0'; g.fillRect(x * c, y * c, c, c);
+      g.fillStyle = (x + y) % 2 ? '#a8917a' : '#cfc5b3'; g.fillRect(x * c, y * c, c, c);
     }
     grano(g, w, h, { manchas: 600, tamano: 20, alfa: .07, puntos: 6000, rayas: 8 });
     g.strokeStyle = 'rgba(40,30,25,.5)'; g.lineWidth = 3;
